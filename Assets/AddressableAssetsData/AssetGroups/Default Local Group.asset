@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: d336306342959a94daf57d59612460ce
+  m_SerializeEntries:
+  - m_GUID: 1437171710be2c0478a8e79323e23b15
+    m_Address: Unit.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2104d03b992c0a54193e8d757d397c4d
+    m_Address: member_01.gif
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4eba2992ed513a74080d1288d0488cb6
+    m_Address: Point_02.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b9a39cb0f2fbe24181d73e61ec02dad
+    m_Address: HomeView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 706f00f34e490e9438442833c749b15f
+    m_Address: line.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73e487273ce73fa4e89da471b9c8ceb7
+    m_Address: BackGround_02.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81c97a10757797a48b8acf9d6c8d23f2
+    m_Address: LevelView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac3444f84c0a6b64fa2aa774fc98aaac
+    m_Address: Level02Map.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af0cce775eebfd041b3b222f84ae6e00
+    m_Address: EventPoint.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b23daf30e58bbb54bbb78959b0236cd0
+    m_Address: Point_01.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5ba8b54fada23e47a3ebd6cbc13e2f2
+    m_Address: Point.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7e86a5fea2abfb4caa6159e92fad1d5
+    m_Address: CNTPoint.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df41eb4a0346acb4a9f1f5d1ad528a2e
+    m_Address: AreaView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5b2cb361f9afb949ade9089cf11820d
+    m_Address: BackGround_01.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e623bc97778927b49befd8666e1e5fc8
+    m_Address: Level01Map.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb93aebda1c889f419263b19ba9a26be
+    m_Address: member_02.gif
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 2118003d64123bb4fb55dff9644bea5d, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ea1b4b831f0764048a3920b161258127, type: 2}
+    - {fileID: 11400000, guid: 847f8d187fb571245842b72e9e70c89a, type: 2}
