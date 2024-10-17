@@ -22,8 +22,9 @@ public class LevelUICtrl : UICtrlBase
         if (param != null && param.Length > 0)
         {
             LoadMap((string) param[0]);
-            LoadPointModel();
+            LoadPointModel("level01.json");
             InitData();
+            InitGameObject();
         }
 
         _model.OnOpen();
@@ -79,17 +80,16 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 读取
+    /// 动态数据加载
     /// </summary>
-    private void LoadPointModel()
+    private void LoadPointModel(string path)
     {
-        // var js = AssetManager.Instance.ReadJsonFileToString(path + ".json");
-        // var records = JsonUtility.FromJson<PointList>(js);
-        // if ()
-        // {
-        // }
+        var points = AssetManager.Instance.LoadJsonFile<PointList>(path).Points;
 
-        _model.PointModels.Add("002", null);
+        foreach (var point in points)
+        {
+            _model.PointModels.Add(point.pointID, point);
+        }
     }
 
     /// <summary>
@@ -97,12 +97,21 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     private void LoadPointData()
     {
-        var js = AssetManager.Instance.ReadJsonFileToString("pointData.json");
-        var records = JsonUtility.FromJson<PointDataList>(js);
+        var pointDatas = AssetManager.Instance.LoadJsonFile<PointDataList>("pointData.json").PointDatas;
 
-        foreach (var pointData in records.PointDatas)
+        if (pointDatas == null)
+        {
+            return;
+        }
+
+        foreach (var pointData in pointDatas)
         {
             if (!_model.PointModels.ContainsKey(pointData.pointID))
+            {
+                continue;
+            }
+
+            if (_model.PointData.ContainsKey(pointData.pointID))
             {
                 continue;
             }
@@ -112,14 +121,17 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 从json文件中加载单位
+    /// 从json文件中加载单位  //todo：拆
     /// </summary>
     private void LoadUnit()
     {
-        var js = AssetManager.Instance.ReadJsonFileToString("unitData.json");
-        var records = JsonUtility.FromJson<UnitList>(js);
+        var units = AssetManager.Instance.LoadJsonFile<UnitList>("unitData.json").Units;
+        if (units == null)
+        {
+            return;
+        }
 
-        foreach (var unit in records.Units)
+        foreach (var unit in units)
         {
             foreach (var pointID in _model.PointModels.Keys)
             {
@@ -140,7 +152,7 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 从json文件中加载事件
+    /// 从json文件中加载事件    //todo:
     /// </summary>
     private void LoadEvent()
     {
@@ -160,6 +172,55 @@ public class LevelUICtrl : UICtrlBase
         }
     }
 
+    /// <summary>
+    /// 游戏物体初始化
+    /// </summary>
+    private void InitGameObject()
+    {
+        InitPoint();
+        InitLine();
+        InitUnit();
+        InitEvent();
+    }
+
+    /// <summary>
+    /// 点位初始化
+    /// </summary>
+    private void InitPoint()
+    {
+        foreach (var pointModel in _model.PointModels)
+        {
+            CreatePoints(_model.PointData[pointModel.Key]);
+        }
+    }
+
+    /// <summary>
+    /// 连接线初始化
+    /// </summary>
+    private void InitLine()
+    {
+        foreach (var pointModel in _model.PointModels)
+        {
+            CheckNextPoint(_model.PointData[pointModel.Key]);
+        }
+    }
+
+    private void InitUnit()
+    {
+        foreach (var pointModel in _model.PointModels)
+        {
+            if (pointModel.Value.unitID == null)
+            {
+                continue;
+            }
+
+            CreateUnit(pointModel.Key);
+        }
+    }
+
+    private void InitEvent()
+    {
+    }
 
     /// <summary>
     /// 创建point
@@ -171,40 +232,56 @@ public class LevelUICtrl : UICtrlBase
 
         if (inputPointData.canNewTeam)
         {
-            var pointPrefab = _view.GameObjectPrefabs["CNTPoint"];
-            _view.CreatePointsObj(pointPosition, pointID, pointPrefab);
-
-            var pointGameObject = GETPointViewByID(pointID);
-            AddCntPointEvent(pointGameObject);
+            CreateCntPoint(pointPosition, pointID);
             return;
         }
 
         if (_model.PointModels[inputPointData.pointID].eventID != "")
         {
-            var pointPrefab = _view.GameObjectPrefabs["EventPoint"];
-            _view.CreatePointsObj(pointPosition, pointID, pointPrefab);
+            CreateEventPoint(pointPosition, pointID);
             return;
         }
 
         _view.CreatePointsObj(pointPosition, pointID, _view.GameObjectPrefabs["Point"]);
-
-        CreateUnit(pointID);
     }
+
+    /// <summary>
+    /// 创建可建立队伍点位
+    /// </summary>
+    /// <param name="pointPosition"></param>
+    /// <param name="pointID"></param>
+    private void CreateCntPoint(Vector3 pointPosition, string pointID)
+    {
+        var pointPrefab = _view.GameObjectPrefabs["CNTPoint"];
+        _view.CreatePointsObj(pointPosition, pointID, pointPrefab);
+
+        var pointGameObject = GETPointViewByID(pointID);
+        AddCntPointEvent(pointGameObject);
+    }
+
+    /// <summary>
+    /// 创建事件点位
+    /// </summary>
+    /// <param name="pointPosition"></param>
+    /// <param name="pointID"></param>
+    private void CreateEventPoint(Vector3 pointPosition, string pointID)
+    {
+        var pointPrefab = _view.GameObjectPrefabs["EventPoint"];
+        _view.CreatePointsObj(pointPosition, pointID, pointPrefab);
+    }
+
 
     /// <summary>
     /// 检查NextPoint是否为空，不为空则连接
     /// </summary>
-    private void CheckNextPoint(IEnumerable<PointData> pointDatas)
+    private void CheckNextPoint(PointData pointData)
     {
-        foreach (var point in pointDatas)
+        if (pointData.nextPoints == null)
         {
-            if (point.nextPoints == null)
-            {
-                continue;
-            }
-
-            ConnectPoints(point);
+            return;
         }
+
+        ConnectPoints(pointData);
     }
 
     /// <summary>
@@ -230,34 +307,56 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 创建地图单位      ///暂时把创建地图单位绑在创建点位函数中
+    /// 创建地图单位
     /// </summary>
     private void CreateUnit(string pointID)
     {
-        // if (inputPoint.unitID == null)
-        // {
-        //     return;
-        // }
+        var unitID = _model.PointModels[pointID].unitID;
+        if (_model.UnitData[unitID].ifKindness)
+        {
+            CreateTeam(pointID);
+        }
+
+        CreateEnemy(pointID);
     }
 
     /// <summary>
     /// 创建敌人
     /// </summary>
-    private void CreateEnemy(Point inputPoint)
+    private void CreateEnemy(string pointID)
     {
         //model
-        // _model.Enemy.Add(inputPoint.pointID,inputPoint.unit);
+        var unitID = _model.PointModels[pointID].unitID;
+        var unit = _model.UnitData[unitID];
+
+        var js = JsonUtility.ToJson(unit);
+        unit = JsonUtility.FromJson<Unit>(js);
+
+        _model.EnemyModels.Add(pointID, unit);
 
         //view
+        var point = _model.PointData[pointID];
+        var position = new Vector3();
+        position.x = point.positionX;
+        position.y = point.positionY;
+        position.z = 0;
+        
+        // _view.CreateUnitObj(pointID,position);
     }
 
     /// <summary>
     /// 创建我方队伍
     /// </summary>
-    private void CreateTeam(Point inputPoint)
+    private void CreateTeam(string pointID)
     {
         //model
-        // _model.Team.Add(inputPoint.pointID,inputPoint.unit);
+        var unitID = _model.PointModels[pointID].unitID;
+        var unit = _model.UnitData[unitID];
+
+        var js = JsonUtility.ToJson(unit);
+        unit = JsonUtility.FromJson<Unit>(js);
+
+        _model.EnemyModels.Add(pointID, unit);
 
         //view
     }
@@ -275,7 +374,7 @@ public class LevelUICtrl : UICtrlBase
             return _model.PointData[id];
         }
 
-        Debug.LogError("getPointByID is null");
+        Debug.LogError("getPointByID : " + id + "is null");
         return null;
     }
 
@@ -316,11 +415,23 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     private void InputJsonTest()
     {
-        var point1 = new Point
+        var points = new PointList
         {
-            pointID = "002",
-            eventID = "",
-            unitID = ""
+            Points = new List<Point>
+            {
+                new Point
+                {
+                    pointID = "002",
+                    eventID = null,
+                    unitID = null
+                },
+                new Point
+                {
+                    pointID = "003",
+                    eventID = null,
+                    unitID = null
+                }
+            }
         };
 
         var pointData = new PointDataList
@@ -330,43 +441,94 @@ public class LevelUICtrl : UICtrlBase
                 new PointData
                 {
                     pointID = "002",
-                    positionX = 1,
+                    positionX = 0,
                     positionY = 0,
                     nextPoints = new List<string>
                     {
                         "003"
                     }
+                },
+                new PointData
+                {
+                    pointID = "003",
+                    positionX = 1,
+                    positionY = 0,
+                    nextPoints = new List<string>
+                    {
+                    }
                 }
             }
         };
 
-        var unit1 = new Unit
+        var units = new UnitList
         {
-            unitID = "unit_01",
-            MemberID = new List<string>
+            Units = new List<Unit>
             {
-                "member_01"
-            },
-            teamAp = 3,
-            ifKindness = false
+                new Unit
+                {
+                    unitID = "unit_01",
+                    PointID = new List<string>
+                    {
+                        "002"
+                    },
+                    MemberID = new List<string>
+                    {
+                        "member_01"
+                    },
+                    teamAp = 3,
+                    ifKindness = false
+                },
+                new Unit
+                {
+                    unitID = "unit_02",
+                    PointID = new List<string>
+                    {
+                        "003"
+                    },
+                    MemberID = new List<string>
+                    {
+                        "member_02"
+                    },
+                    teamAp = 2,
+                    ifKindness = true
+                }
+            }
         };
 
-        var member1 = new Member
+        var members = new MemberList
         {
-            memberID = "member_01",
-            prefabPath = "member_01.gif",
-            name = "test01",
-            HP = 100,
-            MP = 100
+            Members = new List<Member>
+            {
+                new Member
+                {
+                    memberID = "member_01",
+                    prefabPath = "member_01.gif",
+                    name = "test01",
+                    HP = 100,
+                    MP = 100
+                },
+                new Member
+                {
+                    memberID = "member_02",
+                    prefabPath = "member_02.gif",
+                    name = "test02",
+                    HP = 90,
+                    MP = 110
+                }
+            }
         };
-        
 
         var js1 = JsonUtility.ToJson(pointData);
-        var js2 = JsonUtility.ToJson(unit1);
-        var js3 = JsonUtility.ToJson(member1);
+        var js2 = JsonUtility.ToJson(units);
+        var js3 = JsonUtility.ToJson(members);
         var path1 = Path.Combine(Application.persistentDataPath, "pointData.json");
         var path2 = Path.Combine(Application.persistentDataPath, "unitData.json");
         var path3 = Path.Combine(Application.persistentDataPath, "memberData.json");
+
+        var js4 = JsonUtility.ToJson(points);
+        var path4 = Path.Combine(Application.persistentDataPath, "level01.json");
+        File.WriteAllText(path4, js4);
+
         File.WriteAllText(path1, js1);
         File.WriteAllText(path2, js2);
         File.WriteAllText(path3, js3);

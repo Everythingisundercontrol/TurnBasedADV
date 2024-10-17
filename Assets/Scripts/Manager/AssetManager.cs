@@ -40,16 +40,29 @@ public class AssetManager : MonoSingleton<AssetManager>, IMonoManager
         var res = Addressables.LoadAssetAsync<T>(addressableKey);
         return res.WaitForCompletion();
     }
-    
-    
+
+
     /// <summary>
     /// 
     /// </summary>
     public string ReadJsonFileToString(string jsonPath)
     {
-        var path = Path.Combine(Application.persistentDataPath,jsonPath);
+        var path = Path.Combine(Application.persistentDataPath, jsonPath);
         var fileBytes = File.ReadAllBytes(path);
         var jsonString = Encoding.UTF8.GetString(fileBytes);
         return jsonString;
+    }
+
+    public T LoadJsonFile<T>(string fileName)
+    {
+        var js = ReadJsonFileToString(fileName);
+        var records = JsonUtility.FromJson<T>(js);
+
+        if (records == null)
+        {
+            Debug.LogError(fileName + " is null");
+        }
+
+        return records;
     }
 }

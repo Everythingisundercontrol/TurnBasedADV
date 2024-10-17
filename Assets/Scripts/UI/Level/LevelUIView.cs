@@ -135,11 +135,11 @@ public class LevelUIView : MonoBehaviour
     /// <summary>
     /// 创建游戏单位obj//一模一样怎么办？
     /// </summary>
-    public void CreateUnitObj(string unitId, Vector3 position, string prefabPath, GameObject unitContainer)
+    public void CreateUnitObj(string pointID, Vector3 position, string prefabPath, GameObject unitContainer)
     {
         var prefab = AssetManager.Instance.GetGameResource<GameObject>(prefabPath);
         var unit = Instantiate(prefab, position, Quaternion.identity, unitContainer.transform);
 
-        UnitGameObjects.Add(unitId, unit);
+        UnitGameObjects.Add(pointID, unit);
     }
 }
