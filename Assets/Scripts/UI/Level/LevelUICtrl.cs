@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
@@ -22,7 +23,7 @@ public class LevelUICtrl : UICtrlBase
         if (param != null && param.Length > 0)
         {
             LoadMap((string) param[0]);
-            LoadPointModel("level01.json");
+            LoadPointModel((string) param[1]);
             InitData();
             InitGameObject();
         }
@@ -59,13 +60,38 @@ public class LevelUICtrl : UICtrlBase
 
     private void StartBtnOnClick()
     {
-        InputJsonTest();
-
         //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
     }
 
     private void CNTPointBtnOnClick()
     {
+        Debug.Log("123");
+        var pointID = "";
+        var point = EventSystem.current.currentSelectedGameObject;
+        foreach (var pair in _view.PointGameObjects)
+        {
+            if (pair.Value.Equals(point))
+            {
+                pointID = pair.Key;
+            }
+        }
+
+        var unit = new Unit
+        {
+            unitID = "unit_01",
+            PointID = new List<string>(),
+            MemberID = new List<string>
+            {
+                "member_01",
+                "member_02"
+            },
+            teamAp = 3,
+            ifKindness = true
+        };
+        DynamicCreateTeam(pointID, unit);
+        _model.startAble = true;
+        CheckStartBtnState();
+        Debug.Log("123");
         //todo: 新页面，编队与携带物资
     }
 
@@ -76,6 +102,7 @@ public class LevelUICtrl : UICtrlBase
     {
         LoadPointData();
         LoadUnit();
+        LoadMember();
         LoadEvent();
     }
 
@@ -152,12 +179,52 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 从json文件中加载事件    //todo:
+    /// 
+    /// </summary>
+    private void LoadMember()
+    {
+        var members = AssetManager.Instance.LoadJsonFile<MemberList>("memberData.json").Members;
+        if (members == null)
+        {
+            return;
+        }
+
+        //todo:待优化，有筛选地填入
+        foreach (var member in members)
+        {
+            _model.MemberData.Add(member.memberID, member);
+        }
+    }
+
+    /// <summary>
+    /// 从json文件中加载事件    //todo:拆
     /// </summary>
     private void LoadEvent()
     {
-        var js = AssetManager.Instance.ReadJsonFileToString("eventData.json");
-        var records = JsonUtility.FromJson<EventList>(js);
+        var events = AssetManager.Instance.LoadJsonFile<EventList>("eventData.json").Events;
+        if (events == null)
+        {
+            return;
+        }
+
+        foreach (var eEvent in events)
+        {
+            foreach (var pointID in _model.PointModels.Keys)
+            {
+                if (_model.EventData.ContainsKey(pointID)) //data已经有了就不再录入
+                {
+                    continue;
+                }
+
+                if (!eEvent.pointID.Contains(pointID)) //这个事件没有这个点位就跳过
+                {
+                    continue;
+                }
+
+                _model.EventData.Add(eEvent.eventID, eEvent);
+                _model.PointModels[pointID].eventID = eEvent.eventID;
+            }
+        }
     }
 
     /// <summary>
@@ -180,7 +247,7 @@ public class LevelUICtrl : UICtrlBase
         InitPoint();
         InitLine();
         InitUnit();
-        InitEvent();
+        // InitEvent();
     }
 
     /// <summary>
@@ -205,11 +272,14 @@ public class LevelUICtrl : UICtrlBase
         }
     }
 
+    /// <summary>
+    /// 单位初始化
+    /// </summary>
     private void InitUnit()
     {
         foreach (var pointModel in _model.PointModels)
         {
-            if (pointModel.Value.unitID == null)
+            if (string.IsNullOrEmpty(pointModel.Value.unitID))
             {
                 continue;
             }
@@ -218,8 +288,18 @@ public class LevelUICtrl : UICtrlBase
         }
     }
 
+    /// <summary>
+    /// 事件初始化//暂时不做，没需求
+    /// </summary>
     private void InitEvent()
     {
+        // foreach (var pointModel in _model.PointModels)
+        // {
+        //     if (string.IsNullOrEmpty(pointModel.Value.eventID))
+        //     {
+        //         continue;
+        //     }
+        // }
     }
 
     /// <summary>
@@ -287,7 +367,6 @@ public class LevelUICtrl : UICtrlBase
     /// <summary>
     /// 连接当前点和下一点
     /// </summary>
-    /// <param name="point"></param>
     private void ConnectPoints(PointData pointData)
     {
         var lineContainer = GameObject.Find("Lines");
@@ -300,6 +379,11 @@ public class LevelUICtrl : UICtrlBase
         {
             var startPoint = GETPointDataByID(pointData.pointID);
             var endPoint = GETPointDataByID(nextPointID);
+            if (endPoint == null)
+            {
+                continue;
+            }
+
             var start = new Vector3(startPoint.positionX, startPoint.positionY, 0);
             var end = new Vector3(endPoint.positionX, endPoint.positionY, 0);
             _view.CreateLineObj(start, end, lineContainer);
@@ -312,9 +396,11 @@ public class LevelUICtrl : UICtrlBase
     private void CreateUnit(string pointID)
     {
         var unitID = _model.PointModels[pointID].unitID;
+
         if (_model.UnitData[unitID].ifKindness)
         {
-            CreateTeam(pointID);
+            StaticCreateTeam(pointID);
+            return;
         }
 
         CreateEnemy(pointID);
@@ -336,18 +422,29 @@ public class LevelUICtrl : UICtrlBase
 
         //view
         var point = _model.PointData[pointID];
-        var position = new Vector3();
-        position.x = point.positionX;
-        position.y = point.positionY;
-        position.z = 0;
-        
-        // _view.CreateUnitObj(pointID,position);
+        var position = new Vector3
+        {
+            x = point.positionX,
+            y = point.positionY,
+            z = 0
+        };
+
+        if (unit.MemberID.Count <= 0)
+        {
+            Debug.LogError("unit.Member is null");
+            return;
+        }
+
+        var path = _model.MemberData[unit.MemberID[0]].prefabPath;
+        var unitContainer = GameObject.Find("Units");
+
+        _view.CreateUnitObj(pointID, position, path, unitContainer);
     }
 
     /// <summary>
-    /// 创建我方队伍
+    /// 初始化时通过静态数据创建我方队伍
     /// </summary>
-    private void CreateTeam(string pointID)
+    private void StaticCreateTeam(string pointID)
     {
         //model
         var unitID = _model.PointModels[pointID].unitID;
@@ -356,11 +453,60 @@ public class LevelUICtrl : UICtrlBase
         var js = JsonUtility.ToJson(unit);
         unit = JsonUtility.FromJson<Unit>(js);
 
-        _model.EnemyModels.Add(pointID, unit);
+        _model.TeamModels.Add(pointID, unit);
 
         //view
+        var point = _model.PointData[pointID];
+        var position = new Vector3
+        {
+            x = point.positionX,
+            y = point.positionY,
+            z = 0
+        };
+
+        if (unit.MemberID.Count <= 0)
+        {
+            Debug.LogError("unit.Member is null");
+            return;
+        }
+
+        var path = _model.MemberData[unit.MemberID[0]].prefabPath;
+        var unitContainer = GameObject.Find("Units");
+
+        _view.CreateUnitObj(pointID, position, path, unitContainer);
     }
 
+    /// <summary>
+    /// 游戏中动态创建我方队伍
+    /// </summary>
+    private void DynamicCreateTeam(string pointID, Unit unit)
+    {
+        //model
+        var js = JsonUtility.ToJson(unit);
+        unit = JsonUtility.FromJson<Unit>(js);
+
+        _model.TeamModels.Add(pointID, unit);
+
+        //view
+        var point = _model.PointData[pointID];
+        var position = new Vector3
+        {
+            x = point.positionX,
+            y = point.positionY,
+            z = 0
+        };
+
+        if (unit.MemberID.Count <= 0)
+        {
+            Debug.LogError("unit.Member is null");
+            return;
+        }
+
+        var path = _model.MemberData[unit.MemberID[0]].prefabPath;
+        var unitContainer = GameObject.Find("Units");
+
+        _view.CreateUnitObj(pointID, position, path, unitContainer);
+    }
 
     /// <summary>
     /// 通过ID获得点位model
@@ -411,6 +557,20 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
+    /// 开始按钮是否可交互
+    /// </summary>
+    private void CheckStartBtnState()
+    {
+        if (_model.startAble)
+        {
+            _view.StartBtnEnable();
+            return;
+        }
+
+        _view.StartBtnDisable();
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     private void InputJsonTest()
@@ -453,9 +613,7 @@ public class LevelUICtrl : UICtrlBase
                     pointID = "003",
                     positionX = 1,
                     positionY = 0,
-                    nextPoints = new List<string>
-                    {
-                    }
+                    nextPoints = new List<string>()
                 }
             }
         };
@@ -518,20 +676,46 @@ public class LevelUICtrl : UICtrlBase
             }
         };
 
-        var js1 = JsonUtility.ToJson(pointData);
-        var js2 = JsonUtility.ToJson(units);
-        var js3 = JsonUtility.ToJson(members);
-        var path1 = Path.Combine(Application.persistentDataPath, "pointData.json");
-        var path2 = Path.Combine(Application.persistentDataPath, "unitData.json");
-        var path3 = Path.Combine(Application.persistentDataPath, "memberData.json");
+        var events = new EventList
+        {
+            Events = new List<Event>
+            {
+                new Event
+                {
+                    eventID = "event_01",
+                    eventText = "测试测试0123456testtest",
+                    pointID = new List<string>
+                    {
+                        "004"
+                    },
+                    options = new List<string>
+                    {
+                        "支持",
+                        "沉默",
+                        "反对"
+                    }
+                }
+            }
+        };
 
-        var js4 = JsonUtility.ToJson(points);
-        var path4 = Path.Combine(Application.persistentDataPath, "level01.json");
-        File.WriteAllText(path4, js4);
+        // var js1 = JsonUtility.ToJson(pointData);
+        // var js2 = JsonUtility.ToJson(units);
+        // var js3 = JsonUtility.ToJson(members);
+        // var path1 = Path.Combine(Application.persistentDataPath, "pointData.json");
+        // var path2 = Path.Combine(Application.persistentDataPath, "unitData.json");
+        // var path3 = Path.Combine(Application.persistentDataPath, "memberData.json");
+        //
+        // var js4 = JsonUtility.ToJson(points);
+        // var path4 = Path.Combine(Application.persistentDataPath, "level01.json");
+        // File.WriteAllText(path4, js4);
 
-        File.WriteAllText(path1, js1);
-        File.WriteAllText(path2, js2);
-        File.WriteAllText(path3, js3);
+        var js5 = JsonUtility.ToJson(events);
+        var path5 = Path.Combine(Application.persistentDataPath, "eventData.json");
+        File.WriteAllText(path5, js5);
+
+        // File.WriteAllText(path1, js1);
+        // File.WriteAllText(path2, js2);
+        // File.WriteAllText(path3, js3);
         // Debug.Log("file save to: " + path);
     }
 }

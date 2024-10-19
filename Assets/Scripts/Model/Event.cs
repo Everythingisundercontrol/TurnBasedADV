@@ -1,18 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Event : MonoBehaviour
+[Serializable]
+public class Event
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public string eventID;
+    public string eventText;
+    public List<string> pointID;
+    public List<string> options;
 }

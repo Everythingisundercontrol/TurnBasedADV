@@ -3,6 +3,7 @@
 public class AreaUIModel
 {
     public string level;
+    public string jsPath;
     
     /// <summary>
     /// 初始化

@@ -9,7 +9,9 @@ public class LevelUIModel
     public Dictionary<string, PointData> PointData;
     public Dictionary<string, Unit> UnitData;
     public Dictionary<string, Event> EventData;
+    public Dictionary<string, Member> MemberData;
 
+    public bool startAble;
 
     /// <summary>
     /// 初始化
@@ -23,6 +25,7 @@ public class LevelUIModel
         PointData = new Dictionary<string, PointData>();
         UnitData = new Dictionary<string, Unit>(); //key是unitID
         EventData = new Dictionary<string, Event>();
+        MemberData = new Dictionary<string, Member>();
     }
 
     /// <summary>
@@ -37,6 +40,6 @@ public class LevelUIModel
     /// </summary>
     public void OnClose()
     {
-        PointModels = new Dictionary<string, Point>();
+        OnInit();
     }
 }

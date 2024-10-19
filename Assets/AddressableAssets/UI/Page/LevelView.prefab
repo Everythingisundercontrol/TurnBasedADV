@@ -419,7 +419,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &-8722154640709747390
 MonoBehaviour:
@@ -464,9 +464,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   map: {fileID: 0}
   lineList: []
-  mapContainer: {fileID: 0}
-  pointContainer: {fileID: 0}
-  lineContainer: {fileID: 0}
-  unitContainer: {fileID: 0}
   returnBtn: {fileID: 1298753399578830189}
   startBtn: {fileID: 627955053717476088}

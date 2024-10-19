@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
@@ -7,7 +8,7 @@ using Button = UnityEngine.UI.Button;
 public class LevelUIView : MonoBehaviour
 {
     public GameObject map;
-    public List<GameObject> lineList;
+    public List<GameObject> lineList; //不确定有没有用
 
     public Button returnBtn;
     public Button startBtn;
@@ -24,6 +25,7 @@ public class LevelUIView : MonoBehaviour
     /// </summary>
     public void OpenWindow()
     {
+        StartBtnDisable();
         gameObject.SetActive(true);
     }
 
@@ -56,7 +58,13 @@ public class LevelUIView : MonoBehaviour
             Destroy(pair.Value);
         }
 
+        foreach (var pair in UnitGameObjects)
+        {
+            Destroy(pair.Value);
+        }
+
         PointGameObjects = new Dictionary<string, GameObject>();
+        UnitGameObjects = new Dictionary<string, GameObject>();
     }
 
     /// <summary>
@@ -67,6 +75,7 @@ public class LevelUIView : MonoBehaviour
         lineList = new List<GameObject>();
 
         PointGameObjects = new Dictionary<string, GameObject>();
+        UnitGameObjects = new Dictionary<string, GameObject>();
 
         if (GameObjectPrefabs != null)
         {
@@ -133,13 +142,23 @@ public class LevelUIView : MonoBehaviour
     }
 
     /// <summary>
-    /// 创建游戏单位obj//一模一样怎么办？
+    /// 创建游戏单位obj
     /// </summary>
-    public void CreateUnitObj(string pointID, Vector3 position, string prefabPath, GameObject unitContainer)
+    public void CreateUnitObj(string pointID, Vector3 position, string path, GameObject unitContainer)
     {
-        var prefab = AssetManager.Instance.GetGameResource<GameObject>(prefabPath);
-        var unit = Instantiate(prefab, position, Quaternion.identity, unitContainer.transform);
-
+        var sprite = AssetManager.Instance.GetGameResource<Sprite>(path);
+        var unit = Instantiate(GameObjectPrefabs["Unit"], position, Quaternion.identity, unitContainer.transform);
+        unit.GetComponent<SpriteRenderer>().sprite = sprite;
         UnitGameObjects.Add(pointID, unit);
+    }
+
+    public void StartBtnEnable()
+    {
+        startBtn.interactable = true;
+    }
+
+    public void StartBtnDisable()
+    {
+        startBtn.interactable = false;
     }
 }

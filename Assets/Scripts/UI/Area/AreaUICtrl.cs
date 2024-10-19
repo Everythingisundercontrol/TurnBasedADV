@@ -58,7 +58,7 @@ public class AreaUICtrl : UICtrlBase
             return;
         }
 
-        UIManager.Instance.OpenWindow("Level", _model.level);
+        UIManager.Instance.OpenWindow("Level", _model.level,_model.jsPath);
         UIManager.Instance.CloseWindow("Area");
     }
 
@@ -69,6 +69,7 @@ public class AreaUICtrl : UICtrlBase
     {
         ShowMap("BackGround_01.png");
         _model.level = "Level01Map.prefab";
+        _model.jsPath = "level01.json";
         CheckConfirmBtnState();
     }
 
@@ -79,6 +80,7 @@ public class AreaUICtrl : UICtrlBase
     {
         ShowMap("BackGround_02.jpg");
         _model.level = "Level02Map.prefab";
+        _model.jsPath = "level02.json";
         CheckConfirmBtnState();
     }
 
