@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PauseState : MonoBehaviour
+public class PauseState : FsmState
 {
-    // Start is called before the first frame update
-    void Start()
+    public void OnEnter()
     {
-        
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnUpdate()
     {
-        
+    }
+
+    public void OnExit()
+    {
     }
 }

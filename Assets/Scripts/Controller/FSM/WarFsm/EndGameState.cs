@@ -1,18 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class EndGameState : MonoBehaviour
+﻿public class EndGameState : FsmState
 {
-    // Start is called before the first frame update
-    void Start()
+    public void OnEnter()
     {
-        
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnUpdate()
     {
-        
+    }
+
+    public void OnExit()
+    {
     }
 }

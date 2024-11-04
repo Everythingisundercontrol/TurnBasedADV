@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,11 @@ public class HomeUICtrl : UICtrlBase
 {
     private HomeUIView _view;
     private HomeUIModel _model;
+
+    private void OnDestroy()
+    {
+        UIManager.Instance.CloseWindow("HomeView.prefab");
+    }
 
     public override void OnInit(params object[] param)
     {
@@ -37,8 +43,8 @@ public class HomeUICtrl : UICtrlBase
 
     private void StartBtnOnClick()
     {
-        UIManager.Instance.OpenWindow("Area");
-        UIManager.Instance.CloseWindow("Home");
+        UIManager.Instance.OpenWindow("AreaView.prefab");
+        UIManager.Instance.CloseWindow("HomeView.prefab");
     }
 
     private void SettingBtnOnclick()

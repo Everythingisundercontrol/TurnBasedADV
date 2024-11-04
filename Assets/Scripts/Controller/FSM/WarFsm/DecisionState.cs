@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DecisionState : MonoBehaviour
+public class DecisionState : FsmState
 {
-    // Start is called before the first frame update
-    void Start()
+    public void OnEnter()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnUpdate()
+    {
+        
+    }
+
+    public void OnExit()
     {
         
     }

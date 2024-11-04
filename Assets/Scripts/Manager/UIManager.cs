@@ -2,20 +2,17 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class UIManager : MonoSingleton<UIManager>, IMonoManager
+public class UIManager : BaseSingleton<UIManager>, IMonoManager
 {
-    private Dictionary<string, GameObject> _windowPrefabDic = new Dictionary<string, GameObject>();
     private Dictionary<string, UICtrlBase> _allView = new Dictionary<string, UICtrlBase>();
 
     public void Start() //记得加异步
     {
-        Debug.Log("UI.Start");
-        InitView();
     }
 
     public void OnInit()
     {
-        Debug.Log("UI.OnInit");
+        OpenWindow("HomeView.prefab");
     }
 
     public void Update()
@@ -34,6 +31,11 @@ public class UIManager : MonoSingleton<UIManager>, IMonoManager
     {
     }
 
+    public LevelUICtrl GetLevelUICtrl()
+    {
+        return GetCtrl<LevelUICtrl>("LevelView.prefab");
+    }
+    
     /// <summary>
     /// 打开窗口
     /// </summary>
@@ -41,12 +43,12 @@ public class UIManager : MonoSingleton<UIManager>, IMonoManager
     /// <param name="param">参数</param>
     public void OpenWindow(string windowName, params object[] param)
     {
-        if (!_windowPrefabDic.ContainsKey(windowName)) //检查是否有这个UI页面
+        var ctrl = GetCtrl<UICtrlBase>(windowName, param);
+        if (!ctrl)
         {
             return;
         }
 
-        var ctrl = GetCtrl<UICtrlBase>(windowName, param);
         ctrl.OpenRoot(param);
     }
 
@@ -57,28 +59,13 @@ public class UIManager : MonoSingleton<UIManager>, IMonoManager
     /// <param name="param">参数</param>
     public void CloseWindow(string windowName, params object[] param)
     {
-        if (!_windowPrefabDic.ContainsKey(windowName)) //检查是否有这个UI页面
+        var ctrl = GetCtrl<UICtrlBase>(windowName, param);
+        if (!ctrl)
         {
             return;
         }
 
-        var ctrl = GetCtrl<UICtrlBase>(windowName, param);
         ctrl.CloseRoot();
-    }
-    
-
-    /// <summary>
-    /// 加载界面
-    /// </summary>
-    private void InitView()
-    {
-        _windowPrefabDic.Add("Home", AssetManager.Instance.GetGameResource<GameObject>("HomeView.prefab"));
-        _windowPrefabDic.Add("Area", AssetManager.Instance.GetGameResource<GameObject>("AreaView.prefab"));
-        _windowPrefabDic.Add("Level", AssetManager.Instance.GetGameResource<GameObject>("LevelView.prefab"));
-        if (_windowPrefabDic.ContainsKey("Home"))
-        {
-            OpenWindow("Home");
-        }
     }
 
     /// <summary>
@@ -107,8 +94,15 @@ public class UIManager : MonoSingleton<UIManager>, IMonoManager
     /// <returns></returns>
     private T CreateUIPage<T>(string windowName, params object[] param) where T : UICtrlBase
     {
-        var rootObj = Instantiate(_windowPrefabDic[windowName]); //用他自己的ctrl管他自己
+        var window = AssetManager.Instance.LoadAsset<GameObject>(windowName);
+        if (!window)
+        {
+            Debug.LogError(windowName + " 页面不存在");
+            return null;
+        }
 
+        var gm = GameObject.Find("Manager");
+        var rootObj = Object.Instantiate(window, gm.transform, true); //用他自己的ctrl管他自己
         rootObj.SetActive(false);
         var canvas = rootObj.GetComponent<Canvas>();
         if (canvas)
@@ -121,7 +115,6 @@ public class UIManager : MonoSingleton<UIManager>, IMonoManager
         var components = rootObj.GetComponents<Component>();
         foreach (var comp in components)
         {
-            Debug.Log(comp.name);
             if (!(comp is UICtrlBase))
             {
                 continue;

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,8 +43,8 @@ public class AreaUICtrl : UICtrlBase
     /// </summary>
     private void ReturnBtnOnClick()
     {
-        UIManager.Instance.OpenWindow("Home");
-        UIManager.Instance.CloseWindow("Area");
+        UIManager.Instance.OpenWindow("HomeView.prefab");
+        UIManager.Instance.CloseWindow("AreaView.prefab");
     }
 
     /// <summary>
@@ -58,8 +57,20 @@ public class AreaUICtrl : UICtrlBase
             return;
         }
 
-        UIManager.Instance.OpenWindow("Level", _model.level,_model.jsPath);
-        UIManager.Instance.CloseWindow("Area");
+        GameManager.Instance.StartCoroutine(LoadSceneAndOpenWindow());
+    }
+
+    // ReSharper disable Unity.PerformanceAnalysis
+    /// <summary>
+    /// 加载新场景并且切换页面
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator LoadSceneAndOpenWindow()
+    {
+        yield return SceneManager.Instance.ChangeSceneAsync("War");
+        UIManager.Instance.CloseWindow("AreaView.prefab");
+        GameManager.Instance.InitWar(_model.level, _model.jsPath);
+        // UIManager.Instance.OpenWindow("LevelView.prefab", _model.level, _model.jsPath);
     }
 
     /// <summary>
@@ -107,7 +118,7 @@ public class AreaUICtrl : UICtrlBase
         var map = _view.GetChildGameObject("Map");
         var image = map.GetComponent<Image>();
 
-        image.sprite = AssetManager.Instance.GetGameResource<Sprite>(mapName);
+        image.sprite = AssetManager.Instance.LoadAsset<Sprite>(mapName);
         image.color = Color.white;
     }
 }

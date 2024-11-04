@@ -1,14 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
-public class FsmManager : MonoSingleton<FsmManager>, IMonoManager
+public class FsmManager : BaseSingleton<FsmManager>, IMonoManager
 {
     private Dictionary<FsmEnum, BaseFSM> _fsm;
 
     public void OnInit()
     {
-        Debug.Log("FsmManager.OnInit");
         WarFsmOnInit();
     }
 
@@ -37,28 +34,32 @@ public class FsmManager : MonoSingleton<FsmManager>, IMonoManager
     /// </summary>
     /// <param name="fsmEnum"></param>
     /// <param name="fsmStateEnum"></param>
-    public void setFsmState(FsmEnum fsmEnum,FsmStateEnum fsmStateEnum)
+    public void setFsmState(FsmEnum fsmEnum, FsmStateEnum fsmStateEnum)
     {
         _fsm[fsmEnum].ChangeFsmState(fsmStateEnum);
     }
-    
+
     /// <summary>
     /// warFsm初始化
     /// </summary>
     private void WarFsmOnInit()
     {
         _fsm = new Dictionary<FsmEnum, BaseFSM>();
-        var warFsm = new WarFsm();
+        var warFsm = new WarFsm
+        {
+            fsmName = "warFsm"
+        };
         var warFsmDic = new Dictionary<FsmStateEnum, FsmState>();
 
-        var setUpState = new SetUpState();
-        var turnInitState = new TurnInitState();
-        warFsmDic.Add(FsmStateEnum.War_SetUpState, setUpState);
-        warFsmDic.Add(FsmStateEnum.War_TurnInitState, turnInitState);
+        warFsmDic.Add(FsmStateEnum.War_SetUpState, new SetUpState());
+        warFsmDic.Add(FsmStateEnum.War_TurnInitState, new TurnInitState());
+        warFsmDic.Add(FsmStateEnum.War_DecisionState, new DecisionState());
+        warFsmDic.Add(FsmStateEnum.War_EndTurnState, new EndTurnState());
+        warFsmDic.Add(FsmStateEnum.War_EndGameState, new EndGameState());
+        warFsmDic.Add(FsmStateEnum.War_PauseState, new PauseState());
+        warFsmDic.Add(FsmStateEnum.War_BattleState, new BattleState());
 
         warFsm.SetFsm(warFsmDic);
         _fsm.Add(FsmEnum.warFsm, warFsm);
-        // fsm[FsmEnum.warFsm].ChangeFsmState(FsmStateEnum.War_SetUpState);
     }
-    
 }

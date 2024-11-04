@@ -2,6 +2,7 @@
 {
     public void OnEnter()
     {
+        WarManager.Instance.SetUpOnEnter();
     }
 
     public void OnUpdate()
