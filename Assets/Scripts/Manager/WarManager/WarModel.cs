@@ -6,12 +6,13 @@ public class WarModel
     public Dictionary<string, Unit> TeamModels;
     public Dictionary<string, Unit> EnemyModels;
 
-    public Dictionary<string, PointData> PointData;
+    public Dictionary<string, PointData> PointData; //静态
     public Dictionary<string, Unit> UnitData;
     public Dictionary<string, Event> EventData;
     public Dictionary<string, Member> MemberData;
 
     public bool StartAble;
+    public bool ifWin;
 
     /// <summary>
     /// 初始化

@@ -70,7 +70,6 @@ public class AreaUICtrl : UICtrlBase
         yield return SceneManager.Instance.ChangeSceneAsync("War");
         UIManager.Instance.CloseWindow("AreaView.prefab");
         GameManager.Instance.InitWar(_model.level, _model.jsPath);
-        // UIManager.Instance.OpenWindow("LevelView.prefab", _model.level, _model.jsPath);
     }
 
     /// <summary>

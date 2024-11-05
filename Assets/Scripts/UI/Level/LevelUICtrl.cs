@@ -51,7 +51,7 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 返回按钮按下事件，清空数据并且删除point和line
+    /// 返回按钮按下事件
     /// </summary>
     private void ReturnBtnOnClick()
     {
@@ -74,6 +74,7 @@ public class LevelUICtrl : UICtrlBase
     private void StartBtnOnClick()
     {
         //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
+        WarManager.LevelStartBtnOnClickEvent();
     }
 
 

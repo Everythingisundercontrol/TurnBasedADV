@@ -462,7 +462,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2afc0bb7f99680d4c9d7fb4abf1cc7d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  map: {fileID: 0}
-  lineList: []
   returnBtn: {fileID: 1298753399578830189}
   startBtn: {fileID: 627955053717476088}
+  Ap: {fileID: 1483042650455610647}

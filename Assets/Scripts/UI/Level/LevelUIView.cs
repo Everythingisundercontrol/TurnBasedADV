@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 
 public class LevelUIView : MonoBehaviour
 {
     public Button returnBtn;
     public Button startBtn;
+    public Text Ap;
 
     /// <summary>
     /// 打开页面

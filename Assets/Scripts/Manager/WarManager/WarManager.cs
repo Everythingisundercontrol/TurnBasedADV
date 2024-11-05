@@ -5,7 +5,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 {
     public WarModel Model;
 
-    private GameObject _map;
     private List<GameObject> _lineList; //不确定有没有用
     private Dictionary<string, GameObject> _pointGameObjects;
     private Dictionary<string, GameObject> _unitGameObjects;
@@ -27,10 +26,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _unitGameObjects = new Dictionary<string, GameObject>();
 
         _ctrl = UIManager.Instance.GetLevelUICtrl();
-        
+
         FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_SetUpState);
         UIManager.Instance.OpenWindow("LevelView.prefab");
-
     }
 
     public void OnInit()
@@ -52,34 +50,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void OnClear()
     {
     }
-
+    
     /// <summary>
-    /// 关闭当前关卡
-    /// </summary>
-    public void OnClose()
-    {
-        Object.Destroy(_map);
-        foreach (var line in _lineList)
-        {
-            Object.Destroy(line);
-        }
-
-        foreach (var pair in _pointGameObjects)
-        {
-            Object.Destroy(pair.Value);
-        }
-
-        foreach (var pair in _unitGameObjects)
-        {
-            Object.Destroy(pair.Value);
-        }
-
-        _pointGameObjects = new Dictionary<string, GameObject>();
-        _unitGameObjects = new Dictionary<string, GameObject>();
-    }
-
-    /// <summary>
-    /// 初始化
+    /// SetUp初始化
     /// </summary>
     public void SetUpOnEnter()
     {
@@ -91,13 +64,41 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
+    /// SetUp退出,把所有cntP变为普通点
+    /// </summary>
+    public void SetUpOnExit()
+    {
+        foreach (var pointID in _pointGameObjects.Keys)
+        {
+            if (Model.PointData[pointID].canNewTeam == false)
+            {
+                continue;
+            }
+
+            Model.PointData[pointID].canNewTeam = false;
+            var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
+            ChangePoint(pointID, point);
+        }
+    }
+
+    public static void LevelStartBtnOnClickEvent()
+    {
+        FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_TurnInitState);
+    }
+
+    public void LevelReturnBtnOnClickEvent()
+    {
+        FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_EndGameState);
+    }
+
+    /// <summary>
     /// 事件绑定
     /// </summary>
     private void BindEvent()
     {
         EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, ClickLeft);
     }
-    
+
     /// <summary>
     /// 加载地图
     /// </summary>
@@ -115,7 +116,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return;
         }
 
-        _map = Object.Instantiate(mapPrefab, Vector3.zero, Quaternion.identity, mapContainer.transform);
+        Object.Instantiate(mapPrefab, Vector3.zero, Quaternion.identity, mapContainer.transform);
     }
 
     /// <summary>
@@ -130,7 +131,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             Model.PointModels.Add(point.pointID, point);
         }
     }
-    
+
     /// <summary>
     /// 静态数据读入
     /// </summary>
@@ -141,7 +142,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         LoadMember();
         LoadEvent();
     }
-    
+
     /// <summary>
     /// 游戏物体初始化
     /// </summary>
@@ -152,7 +153,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         InitUnit();
         // InitEvent();
     }
-    
+
     /// <summary>
     /// 从json文件中加载点位
     /// </summary>
@@ -316,7 +317,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// //////////////////////////////////
     /// point
     /// //////////////////////////////////
-    
     /// <summary>
     /// 创建point
     /// </summary>
@@ -377,11 +377,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var newPoint = Object.Instantiate(inputGameObject, inputVector3, Quaternion.identity, pointContainer.transform);
         _pointGameObjects.Add(pointID, newPoint);
     }
-    
+
     /// //////////////////////////////////
     /// line
     /// //////////////////////////////////
-    
     /// <summary>
     /// 检查NextPoint是否为空，不为空则连接
     /// </summary>
@@ -420,13 +419,14 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             CreateLineObj(start, end, lineContainer);
         }
     }
-    
+
     /// <summary>
     /// 创建连线的obj
     /// </summary>
     private void CreateLineObj(Vector3 start, Vector3 end, GameObject lineContainer)
     {
-        var line = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>("line.prefab"),lineContainer.transform);
+        var line = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>("line.prefab"),
+            lineContainer.transform);
 
         var lineRenderer = line.GetComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
@@ -444,7 +444,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// //////////////////////////////////
     /// unit
     /// //////////////////////////////////
-    
     /// <summary>
     /// 创建地图单位
     /// </summary>
@@ -560,10 +559,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         var path = Model.MemberData[unit.MemberID[0]].prefabPath;
         var unitContainer = GameObject.Find("Units");
-        
+
         CreateUnitObj(pointID, position, path, unitContainer);
     }
-    
+
     /// <summary>
     /// 创建游戏单位obj
     /// </summary>
@@ -575,17 +574,18 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             Debug.Log("unitContainer == null");
             return;
         }
-        var unit = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>("Unit.prefab"), position, Quaternion.identity, unitContainer.transform);
+
+        var unit = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>("Unit.prefab"), position,
+            Quaternion.identity, unitContainer.transform);
         unit.GetComponent<SpriteRenderer>().sprite = sprite;
         _unitGameObjects.Add(pointID, unit);
     }
-    
+
     /// ////////////////////////////////////
     /// 事件
     /// ////////////////////////////////////
-    
     /// <summary>
-    /// 鼠标左键点击  //todo:
+    /// 鼠标左键点击，检测是否有东西
     /// </summary>
     /// <param name="pos"></param>
     private void ClickLeft(Vector3 pos)
@@ -618,17 +618,18 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         foreach (var pair in _pointGameObjects)
         {
+            if (Model.PointModels[pair.Key].unitID != "")
+            {
+                break;
+            }
+
             if (!pair.Value.Equals(inputGameObject))
             {
                 continue;
             }
 
-            if (Model.PointModels[pair.Key].unitID != "")
-            {
-                continue;
-            }
-
             CNTPointBtnOnClick(pair.Key);
+            break;
         }
     }
 
@@ -652,7 +653,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         DynamicCreateTeam(pointID, unit);
         Model.StartAble = true;
-        
+        Model.PointData[pointID].canNewTeam = false;
+        var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
+        ChangePoint(pointID, point);
         _ctrl.CheckStartBtnState();
         //todo: 新页面，编队与携带物资
     }
@@ -660,7 +663,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// ////////////////////////////////
     /// 工具
     /// ////////////////////////////////
-    
     /// <summary>
     /// 通过ID获得点位model
     /// </summary>
@@ -692,5 +694,16 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         Debug.LogError("getPointByID is null");
         return null;
     }
-    
+
+    /// <summary>
+    /// 改变点的类型
+    /// </summary>
+    private void ChangePoint(string pointID, GameObject inputGameObject)
+    {
+        var transform = _pointGameObjects[pointID].transform;
+        Object.Destroy(_pointGameObjects[pointID]);
+        _pointGameObjects.Remove(pointID);
+        var newPoint = Object.Instantiate(inputGameObject, transform.position, transform.rotation, transform.parent);
+        _pointGameObjects.Add(pointID, newPoint);
+    }
 }
