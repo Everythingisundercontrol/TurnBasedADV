@@ -2,20 +2,22 @@
 
 public class WarModel
 {
-    public Dictionary<string, Point> PointModels; //动态
+    public Dictionary<string, Point> PointModels; //动态,key:pointID
     public Dictionary<string, Unit> TeamModels;
     public Dictionary<string, Unit> EnemyModels;
+
+    public Dictionary<string, List<Member>> MemberModels; //动态,key:UnitID
 
     public Dictionary<string, PointData> PointData; //静态
     public Dictionary<string, Unit> UnitData;
     public Dictionary<string, Event> EventData;
     public Dictionary<string, Member> MemberData;
 
-    public bool StartAble;  //是否可以开始游戏
+    public bool StartAble; //是否可以开始游戏
     public GameStateEnum GameState; //当前游戏状态
 
-    public int TeamPoints;  //队伍行动值
-    public int Rounds;  //回合数
+    public int TeamPoints; //队伍行动值
+    public int Rounds; //回合数
 
     /// <summary>
     /// 初始化
@@ -25,6 +27,8 @@ public class WarModel
         PointModels = new Dictionary<string, Point>();
         TeamModels = new Dictionary<string, Unit>(); //key是pointID
         EnemyModels = new Dictionary<string, Unit>(); //key是pointID
+
+        MemberModels = new Dictionary<string, List<Member>>();
 
         PointData = new Dictionary<string, PointData>();
         UnitData = new Dictionary<string, Unit>(); //key是unitID
@@ -51,20 +55,47 @@ public class WarModel
         PointModels.Clear();
         TeamModels.Clear();
         EnemyModels.Clear();
+        MemberModels.Clear();
         PointData.Clear();
         UnitData.Clear();
         EventData.Clear();
         MemberData.Clear();
-        
+
         GameState = GameStateEnum.Default;
         StartAble = false;
     }
 
+    /// <summary>
+    /// 游戏开始
+    /// </summary>
     public void GameStart()
     {
-        
+        TeamPoints = 0;
+        Rounds = 0;
+        GameState = GameStateEnum.Gaming;
     }
-    
+
+    /// <summary>
+    /// 回合开始,数据更新，todo:buff更新
+    /// </summary>
+    public void TurnStart()
+    {
+        Rounds++;
+        TeamPoints += Rounds * (TeamModels.Count + 1); //可能要改？？
+        MemberAPReset();
+    }
+
+    /// <summary>
+    /// 成员Ap重置
+    /// </summary>
+    private void MemberAPReset()
+    {
+        foreach (var Members in MemberModels.Values)
+        {
+            
+        }
+    }
+
     /// <summary>
     /// 加载动态数据
     /// </summary>
@@ -77,7 +108,7 @@ public class WarModel
             PointModels.Add(point.pointID, point);
         }
     }
-    
+
     /// <summary>
     /// 静态数据读入加载
     /// </summary>
@@ -88,7 +119,7 @@ public class WarModel
         LoadMember();
         LoadEvent();
     }
-    
+
     /// <summary>
     /// 从json文件中加载点位
     /// </summary>

@@ -89,7 +89,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
-    /// SetUp退出,把所有cntP变为普通点
+    /// SetUp退出,把所有cntP变为普通点，事件绑定解除,游戏开始
     /// </summary>
     public void SetUpOnExit()
     {
@@ -104,6 +104,26 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
             ChangePoint(pointID, point);
         }
+
+        EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
+        
+        Model.GameStart();
+    }
+
+    /// <summary>
+    /// TurnInit进入，数据计算并reset，
+    /// </summary>
+    public void TurnInitOnEnter()
+    {
+        Model.TurnStart();
+    }
+
+    /// <summary>
+    /// TurnInit退出
+    /// </summary>
+    public void TurnInitOnExit()
+    {
+        
     }
 
     /// <summary>
@@ -119,7 +139,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     private void BindEvent()
     {
-        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, ClickLeft);
+        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
     }
 
     /// <summary>
@@ -367,6 +387,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         Model.EnemyModels.Add(pointID, unit);
 
+        FillInMemberModel(unit);
+
         //view
         var point = Model.PointData[pointID];
         var position = new Vector3
@@ -402,6 +424,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         Model.TeamModels.Add(pointID, unit);
 
+        FillInMemberModel(unit);
+
         //view
         var point = Model.PointData[pointID];
         var position = new Vector3
@@ -430,10 +454,12 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     {
         //model
         var js = JsonUtility.ToJson(unit);
-        unit = JsonUtility.FromJson<Unit>(js);
+        unit = JsonUtility.FromJson<Unit>(js); //深拷贝
 
         Model.TeamModels.Add(pointID, unit);
         Model.PointModels[pointID].unitID = unit.unitID;
+
+        FillInMemberModel(unit);
 
         //view
         var point = Model.PointData[pointID];
@@ -474,14 +500,32 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _unitGameObjects.Add(pointID, unit);
     }
 
+    /// <summary>
+    /// 填入member动态数据
+    /// </summary>
+    private void FillInMemberModel(Unit unit)
+    {
+        var memberList = new List<Member>();
+
+        foreach (var memberID in unit.MemberID)
+        {
+            var js = JsonUtility.ToJson(Model.MemberData[memberID]);
+            var member = JsonUtility.FromJson<Member>(js);
+            memberList.Add(member);
+        }
+
+        Model.MemberModels.Add(unit.unitID, memberList);
+        Debug.Log("FillInMemberModel : " + Model.MemberModels.Count);
+    }
+
     /// ////////////////////////////////////
     /// 事件
     /// ////////////////////////////////////
     /// <summary>
-    /// 鼠标左键点击，检测是否有东西
+    /// SetUp阶段鼠标左键点击，检测是否有东西
     /// </summary>
     /// <param name="pos"></param>
-    private void ClickLeft(Vector3 pos)
+    private void SetUpClickLeft(Vector3 pos)
     {
         if (Camera.main is null)
         {
@@ -496,18 +540,12 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         var pointID = PointCheck(hit.collider.gameObject);
-        if (pointID != null)
+        if (pointID == null)
         {
-            //todo:聚焦
-            TeamCreateAbleCheck(pointID);
             return;
         }
 
-        var UnitID = UnitCheck(hit.collider.gameObject);
-        if (UnitID != null)
-        {
-            //todo:聚焦
-        }
+        TeamCreateAbleCheck(pointID);
     }
 
     /// <summary>
@@ -606,6 +644,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             teamAp = 3,
             ifKindness = true
         };
+
 
         DynamicCreateTeam(pointID, unit);
 
