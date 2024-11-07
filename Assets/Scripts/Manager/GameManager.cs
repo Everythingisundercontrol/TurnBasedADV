@@ -1,21 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 
 public class GameManager : MonoSingleton<GameManager>
 {
     private List<IMonoManager> _managerList = new List<IMonoManager>();
-    private UIManager uiManager;
+    // private UIManager _uiManager;
 
     protected override void Awake()
     {
         base.Awake();
+
         _managerList.Add(AssetManager.Instance);
         _managerList.Add(UIManager.Instance);
         _managerList.Add(FsmManager.Instance);
         _managerList.Add(InputManager.Instance);
         _managerList.Add(EventManager.Instance);
         _managerList.Add(SceneManager.Instance);
+        _managerList.Add(WarManager.Instance);
         DontDestroyOnLoad(gameObject);
         DontDestroyOnLoad(GameObject.Find("EventSystem"));
     }
@@ -26,6 +29,8 @@ public class GameManager : MonoSingleton<GameManager>
         {
             manager.OnInit();
         }
+
+        StartCoroutine(StartEnter());
     }
 
     protected void Update()
@@ -36,22 +41,14 @@ public class GameManager : MonoSingleton<GameManager>
         }
     }
 
+    // ReSharper disable Unity.PerformanceAnalysis
     /// <summary>
-    /// 进入war
+    /// 加载新场景并且进入Start
     /// </summary>
-    /// <param name="level"></param>
-    /// <param name="jsPath"></param>
-    public void InitWar(string level, string jsPath)
+    /// <returns></returns>
+    private static IEnumerator StartEnter()
     {
-        WarManager.Instance.OnInit(level, jsPath);
-        _managerList.Add(WarManager.Instance);
-    }
-
-    /// <summary>
-    /// 退出war   //todo:是否要将warManager的Instance销毁？
-    /// </summary>
-    public void QuitWar()
-    {
-        WarManager.Instance.OnClear();
+        yield return SceneManager.Instance.ChangeSceneAsync("Home");
+        UIManager.Instance.OpenWindow("HomeView.prefab");
     }
 }

@@ -6,7 +6,7 @@ public class FsmManager : BaseSingleton<FsmManager>, IMonoManager
 
     public void OnInit()
     {
-        WarFsmOnInit();
+        _fsm = new Dictionary<FsmEnum, BaseFSM>();
     }
 
     public void Update()
@@ -34,17 +34,16 @@ public class FsmManager : BaseSingleton<FsmManager>, IMonoManager
     /// </summary>
     /// <param name="fsmEnum"></param>
     /// <param name="fsmStateEnum"></param>
-    public void setFsmState(FsmEnum fsmEnum, FsmStateEnum fsmStateEnum)
+    public void SetFsmState(FsmEnum fsmEnum, FsmStateEnum fsmStateEnum)
     {
         _fsm[fsmEnum].ChangeFsmState(fsmStateEnum);
     }
 
     /// <summary>
-    /// warFsm初始化
+    /// warFsm开启
     /// </summary>
-    private void WarFsmOnInit()
+    public void WarFsmOnOpen()
     {
-        _fsm = new Dictionary<FsmEnum, BaseFSM>();
         var warFsm = new WarFsm
         {
             fsmName = "warFsm"
@@ -61,5 +60,13 @@ public class FsmManager : BaseSingleton<FsmManager>, IMonoManager
 
         warFsm.SetFsm(warFsmDic);
         _fsm.Add(FsmEnum.warFsm, warFsm);
+    }
+
+    /// <summary>
+    /// warFsm关闭
+    /// </summary>
+    public void WarFsmOnClose()
+    {
+        _fsm.Remove(FsmEnum.warFsm);
     }
 }

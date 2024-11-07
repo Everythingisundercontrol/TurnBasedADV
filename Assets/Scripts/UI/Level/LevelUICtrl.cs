@@ -56,25 +56,28 @@ public class LevelUICtrl : UICtrlBase
     private void ReturnBtnOnClick()
     {
         _model.OnClose();
-        GameManager.Instance.StartCoroutine(LoadSceneAndOpenWindow());
+        GameManager.Instance.StartCoroutine(QuitWar());
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
     /// <summary>
-    /// 加载新场景并且切换页面
+    /// 加载新场景并且退出war
     /// </summary>
     /// <returns></returns>
-    private IEnumerator LoadSceneAndOpenWindow()
+    private IEnumerator QuitWar()
     {
-        yield return SceneManager.Instance.ChangeSceneAsync("SampleScene");
+        yield return SceneManager.Instance.ChangeSceneAsync("Home");
+        WarManager.Instance.OnQuit();
         UIManager.Instance.OpenWindow("AreaView.prefab");
-        UIManager.Instance.CloseWindow("LevelView.prefab");
     }
 
-    private void StartBtnOnClick()
+    /// <summary>
+    /// 正式开始游戏
+    /// </summary>
+    private static void StartBtnOnClick()
     {
         //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
-        WarManager.LevelStartBtnOnClickEvent();
+        WarManager.Instance.LevelStartBtnOnClickEvent();
     }
 
 

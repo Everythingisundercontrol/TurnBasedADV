@@ -11,13 +11,13 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 
     protected virtual void Awake()
     {
-        if (_instance != null)
+        if (_instance)
         {
-            Debug.Log("destroy");
+            Debug.Log("destroy : " + gameObject.name);
             Destroy(gameObject);
         }
 
-        if (_instance == null)
+        if (!_instance)
         {
             _instance = this as T;
         }

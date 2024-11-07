@@ -9,30 +9,20 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     private Dictionary<string, GameObject> _pointGameObjects;
     private Dictionary<string, GameObject> _unitGameObjects;
 
-    private LevelUICtrl _ctrl;
+    private LevelUICtrl _ctrl; //获取UI信息
 
     private string _level;
     private string _jsPath;
 
-    public void OnInit(string level, string jsPath)
+
+    public void OnInit()
     {
-        _level = level;
-        _jsPath = jsPath;
         Model = new WarModel();
         Model.OnInit();
 
         _lineList = new List<GameObject>();
         _pointGameObjects = new Dictionary<string, GameObject>();
         _unitGameObjects = new Dictionary<string, GameObject>();
-
-        _ctrl = UIManager.Instance.GetLevelUICtrl();
-
-        FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_SetUpState);
-        UIManager.Instance.OpenWindow("LevelView.prefab");
-    }
-
-    public void OnInit()
-    {
     }
 
     public void Update()
@@ -50,15 +40,50 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void OnClear()
     {
     }
-    
+
     /// <summary>
-    /// SetUp初始化
+    /// 进入关卡，赋值
+    /// </summary>
+    public void OnEnter(string level, string jsPath)
+    {
+        _level = level;
+        _jsPath = jsPath;
+
+        UIManager.Instance.OpenWindow("LevelView.prefab");
+
+        _ctrl = UIManager.Instance.GetLevelUICtrl();
+
+
+        FsmManager.Instance.WarFsmOnOpen();
+        FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_SetUpState);
+    }
+
+    /// <summary>
+    /// 退出关卡,数据清空
+    /// </summary>
+    public void OnQuit()
+    {
+        _level = null;
+        _jsPath = null;
+
+        _lineList.Clear();
+        _pointGameObjects.Clear();
+        _unitGameObjects.Clear();
+
+        FsmManager.Instance.WarFsmOnClose();
+        _ctrl = null;
+        UIManager.Instance.CloseWindow("LevelView.prefab");
+
+        Model.OnExit();
+    }
+
+    /// <summary>
+    /// SetUp，加载数据，物体创建，事件绑定
     /// </summary>
     public void SetUpOnEnter()
     {
         LoadMap(_level);
-        LoadPointModel(_jsPath);
-        InitData();
+        Model.OnEnter(_jsPath);
         InitGameObject();
         BindEvent();
     }
@@ -81,14 +106,12 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
     }
 
-    public static void LevelStartBtnOnClickEvent()
+    /// <summary>
+    /// 关卡界面开始按钮点击事件
+    /// </summary>
+    public void LevelStartBtnOnClickEvent()
     {
-        FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_TurnInitState);
-    }
-
-    public void LevelReturnBtnOnClickEvent()
-    {
-        FsmManager.Instance.setFsmState(FsmEnum.warFsm, FsmStateEnum.War_EndGameState);
+        FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_TurnInitState);
     }
 
     /// <summary>
@@ -119,29 +142,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         Object.Instantiate(mapPrefab, Vector3.zero, Quaternion.identity, mapContainer.transform);
     }
 
-    /// <summary>
-    /// 加载动态数据
-    /// </summary>
-    private void LoadPointModel(string path)
-    {
-        var points = AssetManager.LoadJsonFile<PointList>(path).Points;
-
-        foreach (var point in points)
-        {
-            Model.PointModels.Add(point.pointID, point);
-        }
-    }
-
-    /// <summary>
-    /// 静态数据读入
-    /// </summary>
-    private void InitData()
-    {
-        LoadPointData();
-        LoadUnit();
-        LoadMember();
-        LoadEvent();
-    }
 
     /// <summary>
     /// 游戏物体初始化
@@ -154,113 +154,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         // InitEvent();
     }
 
-    /// <summary>
-    /// 从json文件中加载点位
-    /// </summary>
-    private void LoadPointData()
-    {
-        var pointDatas = AssetManager.LoadJsonFile<PointDataList>("pointData.json").PointDatas;
-
-        if (pointDatas == null)
-        {
-            return;
-        }
-
-        foreach (var pointData in pointDatas)
-        {
-            if (!Model.PointModels.ContainsKey(pointData.pointID))
-            {
-                continue;
-            }
-
-            if (Model.PointData.ContainsKey(pointData.pointID))
-            {
-                continue;
-            }
-
-            Model.PointData.Add(pointData.pointID, pointData);
-        }
-    }
-
-    /// <summary>
-    /// 从json文件中加载单位  //todo：拆
-    /// </summary>
-    private void LoadUnit()
-    {
-        var units = AssetManager.LoadJsonFile<UnitList>("unitData.json").Units;
-        if (units == null)
-        {
-            return;
-        }
-
-        foreach (var unit in units)
-        {
-            foreach (var pointID in Model.PointModels.Keys)
-            {
-                if (Model.UnitData.ContainsKey(pointID))
-                {
-                    continue;
-                }
-
-                if (!unit.PointID.Contains(pointID))
-                {
-                    continue;
-                }
-
-                Model.UnitData.Add(unit.unitID, unit);
-                Model.PointModels[pointID].unitID = unit.unitID;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 从json文件中加载角色
-    /// </summary>
-    private void LoadMember()
-    {
-        var members = AssetManager.LoadJsonFile<MemberList>("memberData.json").Members;
-        if (members == null)
-        {
-            return;
-        }
-
-        //todo:待优化，有筛选地填入
-        foreach (var member in members)
-        {
-            Model.MemberData.Add(member.memberID, member);
-        }
-    }
-
-    /// <summary>
-    /// 从json文件中加载事件    //todo:拆
-    /// </summary>
-    private void LoadEvent()
-    {
-        var events = AssetManager.LoadJsonFile<EventList>("eventData.json").Events;
-        if (events == null)
-        {
-            return;
-        }
-
-        foreach (var eEvent in events)
-        {
-            foreach (var pointID in Model.PointModels.Keys)
-            {
-                if (Model.EventData.ContainsKey(pointID)) //data已经有了就不再录入
-                {
-                    continue;
-                }
-
-                if (!eEvent.pointID.Contains(pointID)) //这个事件没有这个点位就跳过
-                {
-                    continue;
-                }
-
-                Model.EventData.Add(eEvent.eventID, eEvent);
-                Model.PointModels[pointID].eventID = eEvent.eventID;
-            }
-        }
-    }
 
     /// <summary>
     /// 点位初始化
@@ -602,35 +495,98 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return;
         }
 
-        CNTPointBtnOnClickCheck(hit.collider.gameObject);
+        var pointID = PointCheck(hit.collider.gameObject);
+        if (pointID != null)
+        {
+            //todo:聚焦
+            TeamCreateAbleCheck(pointID);
+            return;
+        }
+
+        var UnitID = UnitCheck(hit.collider.gameObject);
+        if (UnitID != null)
+        {
+            //todo:聚焦
+        }
     }
 
     /// <summary>
-    /// 检查PointGameObjects是否持有该物体
+    /// 检测是否是点位
     /// </summary>
-    /// <param name="inputGameObject"></param>
-    private void CNTPointBtnOnClickCheck(GameObject inputGameObject)
+    private string PointCheck(GameObject inputGameObject)
     {
         if (!_pointGameObjects.ContainsValue(inputGameObject))
+        {
+            return null;
+        }
+
+        var pointID = GetClickPointInfo(inputGameObject);
+        return pointID;
+    }
+
+    /// <summary>
+    /// 检测是否是单位
+    /// </summary>
+    private string UnitCheck(GameObject inputGameObject)
+    {
+        if (!_unitGameObjects.ContainsValue(inputGameObject))
+        {
+            return null;
+        }
+
+        // var Uni
+        return null;
+    }
+
+    /// <summary>
+    /// 获取点击的point在_pointGameObjects中的信息,可能返回null
+    /// </summary>
+    private string GetClickPointInfo(GameObject inputGameObject)
+    {
+        foreach (var pair in _pointGameObjects)
+        {
+            if (pair.Value.Equals(inputGameObject))
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 获取点击的Unit的pointID,可能返回null
+    /// </summary>
+    private string GetClickUnitInfo(GameObject inputGameObject)
+    {
+        foreach (var pair in _unitGameObjects)
+        {
+            if (pair.Value.Equals(inputGameObject))
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 检查该点位是否可创建队伍并判断unit是否为空
+    /// </summary>
+    /// <param name="inputGameObject"></param>
+    private void TeamCreateAbleCheck(string pointID)
+    {
+        if (!Model.PointData[pointID].canNewTeam)
         {
             return;
         }
 
-        foreach (var pair in _pointGameObjects)
+        if (Model.PointModels[pointID].unitID != "")
         {
-            if (Model.PointModels[pair.Key].unitID != "")
-            {
-                break;
-            }
-
-            if (!pair.Value.Equals(inputGameObject))
-            {
-                continue;
-            }
-
-            CNTPointBtnOnClick(pair.Key);
-            break;
+            return;
         }
+
+        CNTPointBtnOnClick(pointID);
     }
 
     /// <summary>
@@ -652,10 +608,13 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         };
 
         DynamicCreateTeam(pointID, unit);
+
         Model.StartAble = true;
         Model.PointData[pointID].canNewTeam = false;
+
         var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
         ChangePoint(pointID, point);
+
         _ctrl.CheckStartBtnState();
         //todo: 新页面，编队与携带物资
     }

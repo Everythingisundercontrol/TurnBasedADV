@@ -57,19 +57,19 @@ public class AreaUICtrl : UICtrlBase
             return;
         }
 
-        GameManager.Instance.StartCoroutine(LoadSceneAndOpenWindow());
+        GameManager.Instance.StartCoroutine(WarEnter());
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
     /// <summary>
-    /// 加载新场景并且切换页面
+    /// 加载新场景并且进入war
     /// </summary>
     /// <returns></returns>
-    private IEnumerator LoadSceneAndOpenWindow()
+    private IEnumerator WarEnter()
     {
         yield return SceneManager.Instance.ChangeSceneAsync("War");
         UIManager.Instance.CloseWindow("AreaView.prefab");
-        GameManager.Instance.InitWar(_model.level, _model.jsPath);
+        WarManager.Instance.OnEnter(_model.level, _model.jsPath);
     }
 
     /// <summary>

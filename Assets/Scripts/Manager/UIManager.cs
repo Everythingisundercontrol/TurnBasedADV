@@ -12,7 +12,6 @@ public class UIManager : BaseSingleton<UIManager>, IMonoManager
 
     public void OnInit()
     {
-        OpenWindow("HomeView.prefab");
     }
 
     public void Update()
@@ -35,7 +34,7 @@ public class UIManager : BaseSingleton<UIManager>, IMonoManager
     {
         return GetCtrl<LevelUICtrl>("LevelView.prefab");
     }
-    
+
     /// <summary>
     /// 打开窗口
     /// </summary>
