@@ -71,6 +71,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _unitGameObjects.Clear();
 
         FsmManager.Instance.WarFsmOnClose();
+        _ctrl.OnClear();
         _ctrl = null;
         UIManager.Instance.CloseWindow("LevelView.prefab");
 
@@ -82,6 +83,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     public void SetUpOnEnter()
     {
+        Debug.Log("SetUpOnEnter");
         LoadMap(_level);
         Model.OnEnter(_jsPath);
         InitGameObject();
@@ -106,22 +108,44 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
-        
+
         Model.GameStart();
     }
 
     /// <summary>
-    /// TurnInit进入，数据计算并reset，
+    /// TurnInit进入，数据计算并reset，全部完成后进入decision状态
     /// </summary>
     public void TurnInitOnEnter()
     {
+        Debug.Log("TurnInitOnEnter");
         Model.TurnStart();
+        _ctrl.ShowTeamPoint(Model.TeamPoints);
+        var leaderMemberID = Model.FocosOn.MemberID[0];
+        var path = Model.MemberData[leaderMemberID].prefabPath;
+        _ctrl.ShowFocosOnUnit(path);
+
+        FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_DecisionState);
     }
 
     /// <summary>
     /// TurnInit退出
     /// </summary>
     public void TurnInitOnExit()
+    {
+    }
+
+    /// <summary>
+    /// Decision进入
+    /// </summary>
+    public void DecisionOnEnter()
+    {
+        Debug.Log("DecisionOnEnter");
+    }
+
+    /// <summary>
+    /// Decision退出
+    /// </summary>
+    public void DecisionOnExit()
     {
         
     }
@@ -480,6 +504,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var unitContainer = GameObject.Find("Units");
 
         CreateUnitObj(pointID, position, path, unitContainer);
+
+        Model.FocosOn = unit; //聚焦改变
     }
 
     /// <summary>
@@ -546,6 +572,13 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         TeamCreateAbleCheck(pointID);
+    }
+
+    /// <summary>
+    /// 决策阶段鼠标左键点击
+    /// </summary>
+    private void DecisionClickLeft()
+    {
     }
 
     /// <summary>

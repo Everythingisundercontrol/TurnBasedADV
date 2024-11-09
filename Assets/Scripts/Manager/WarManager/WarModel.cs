@@ -19,6 +19,8 @@ public class WarModel
     public int TeamPoints; //队伍行动值
     public int Rounds; //回合数
 
+    public Unit FocosOn;
+
     /// <summary>
     /// 初始化
     /// </summary>
@@ -92,7 +94,10 @@ public class WarModel
     {
         foreach (var Members in MemberModels.Values)
         {
-            
+            foreach (var member in Members)
+            {
+                member.Ap = MemberData[member.memberID].Ap;
+            }
         }
     }
 

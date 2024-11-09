@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 
 public class LevelUIView : MonoBehaviour
 {
-    public GameObject TeamInfo;
+    public GameObject teamInfo;
     public Button returnBtn;
+    public GameObject TurnEndBtnObj;
+    public Button TurnEndBtn;
+    public GameObject startBtnObj;
     public Button startBtn;
-    public Text Tp;
+    public Text tp;
     public Image leaderPic;
 
     /// <summary>
@@ -17,6 +21,7 @@ public class LevelUIView : MonoBehaviour
     {
         StartBtnDisable();
         ShowTeamInfo(false);
+        TurnEndBtnObj.SetActive(false);
         gameObject.SetActive(true);
     }
 
@@ -51,17 +56,28 @@ public class LevelUIView : MonoBehaviour
     {
         if (showRoHide)
         {
-            TeamInfo.SetActive(true);
+            teamInfo.SetActive(true);
             return;
         }
 
-        TeamInfo.SetActive(false);
+        teamInfo.SetActive(false);
     }
 
     /// <summary>
     /// 设置Ap的text
     /// </summary>
-    public void SetTp(int Tp)
+    public void SetTp(int tp)
     {
+        this.tp.text = "[TP: " + tp + " ]";
+    }
+
+    /// <summary>
+    /// 设置LeaderPic
+    /// </summary>
+    public void SetLeaderPic(Sprite inputLeaderPic)
+    {
+        leaderPic.sprite = inputLeaderPic;
+        leaderPic.color = Color.white;
+        Debug.Log("SetLeaderPic" + inputLeaderPic.name);
     }
 }

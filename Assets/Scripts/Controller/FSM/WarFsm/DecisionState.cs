@@ -6,7 +6,7 @@ public class DecisionState : FsmState
 {
     public void OnEnter()
     {
-        
+        WarManager.Instance.DecisionOnEnter();
     }
 
     public void OnUpdate()
@@ -16,6 +16,6 @@ public class DecisionState : FsmState
 
     public void OnExit()
     {
-        
+        WarManager.Instance.DecisionOnExit();
     }
 }

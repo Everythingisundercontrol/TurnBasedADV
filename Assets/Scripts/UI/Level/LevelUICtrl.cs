@@ -28,6 +28,9 @@ public class LevelUICtrl : UICtrlBase
 
     public override void OnClear()
     {
+        _view.tp.text = "[TP: Nan ]";
+        _view.teamInfo.SetActive(false);
+        _view.startBtnObj.SetActive(true);
     }
 
     public override void BindEvent()
@@ -35,7 +38,7 @@ public class LevelUICtrl : UICtrlBase
         _view.returnBtn.onClick.AddListener(ReturnBtnOnClick);
         _view.startBtn.onClick.AddListener(StartBtnOnClick);
     }
-    
+
     /// <summary>
     /// 开始按钮是否可交互
     /// </summary>
@@ -48,6 +51,31 @@ public class LevelUICtrl : UICtrlBase
         }
 
         _view.StartBtnDisable();
+    }
+
+    /// <summary>
+    /// 展示Tp
+    /// </summary>
+    public void ShowTeamPoint(int tp)
+    {
+        _view.SetTp(tp);
+    }
+
+    /// <summary>
+    /// 展示当前聚焦队伍信息
+    /// </summary>
+    public void ShowFocosOnUnit(string spritePath)
+    {
+        var sp = AssetManager.Instance.LoadAsset<Sprite>(spritePath);
+        _view.SetLeaderPic(sp);
+    }
+
+    /// <summary>
+    /// ui页面进入decision动作
+    /// </summary>
+    public void DecisionOnEnterUI()
+    {
+        
     }
 
     /// <summary>
@@ -74,11 +102,12 @@ public class LevelUICtrl : UICtrlBase
     /// <summary>
     /// 正式开始游戏
     /// </summary>
-    private static void StartBtnOnClick()
+    private void StartBtnOnClick()
     {
         //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
         WarManager.Instance.LevelStartBtnOnClickEvent();
+        _view.ShowTeamInfo(true);
+        _view.startBtnObj.SetActive(false);
+        _view.TurnEndBtnObj.SetActive(true);
     }
-
-
 }
