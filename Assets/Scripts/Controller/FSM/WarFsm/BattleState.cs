@@ -6,6 +6,7 @@ public class BattleState : FsmState
 {
     public void OnEnter()
     {
+        WarManager.Instance.BattleOnEnter();
     }
 
     public void OnUpdate()
@@ -14,5 +15,6 @@ public class BattleState : FsmState
 
     public void OnExit()
     {
+        WarManager.Instance.BattleOnExit();
     }
 }

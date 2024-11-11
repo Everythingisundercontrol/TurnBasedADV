@@ -19,7 +19,7 @@ public class WarModel
     public int TeamPoints; //队伍行动值
     public int Rounds; //回合数
 
-    public Unit FocosOn;
+    public Unit FocosOn; //聚焦队伍
 
     /// <summary>
     /// 初始化
@@ -85,6 +85,51 @@ public class WarModel
         Rounds++;
         TeamPoints += Rounds * (TeamModels.Count + 1); //可能要改？？
         MemberAPReset();
+    }
+
+    /// <summary>
+    /// 广度优先BFS计算两点之间最短路径
+    /// </summary>
+    public List<string> PointsShortestPathCalculation(string start, string end)
+    {
+        var queue = new Queue<(Point, List<string>)>();
+        queue.Enqueue((PointModels[start], new List<string> {start}));
+
+        var visited = new HashSet<string>();
+
+        while (queue.Count > 0)
+        {
+            var (current, path) = queue.Dequeue();
+            var currentPointID = current.pointID;
+
+            if (!visited.Contains(currentPointID))
+            {
+                visited.Add(currentPointID);
+                if (currentPointID == end)
+                {
+                    return path;
+                }
+
+                foreach (var nextPoint in PointData[currentPointID].nextPoints)
+                {
+                    if (!visited.Contains(nextPoint))
+                    {
+                        queue.Enqueue((PointModels[nextPoint], new List<string>(path) {nextPoint}));
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 计算两点间最短距离
+    /// </summary>
+    public int PointsDistanceCalculation(string start, string end)
+    {
+        var distance = PointsShortestPathCalculation(start, end).Count;
+        return distance - 1;
     }
 
     /// <summary>

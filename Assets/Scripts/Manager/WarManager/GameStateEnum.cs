@@ -2,6 +2,7 @@
 {
     Default,
     Gaming,
+    Pause,
     Win,
     Fail
 }

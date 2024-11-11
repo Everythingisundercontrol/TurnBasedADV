@@ -6,6 +6,7 @@ public class PauseState : FsmState
 {
     public void OnEnter()
     {
+        WarManager.Instance.PauseOnEnter();
     }
 
     public void OnUpdate()
@@ -14,5 +15,6 @@ public class PauseState : FsmState
 
     public void OnExit()
     {
+        WarManager.Instance.PauseOnExit();
     }
 }

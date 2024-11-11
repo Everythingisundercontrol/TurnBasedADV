@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class EndTurnState : FsmState
+﻿public class EndTurnState : FsmState
 {
     public void OnEnter()
     {
+        WarManager.Instance.EndTurnOnEnter();
     }
 
     public void OnUpdate()
@@ -14,5 +11,6 @@ public class EndTurnState : FsmState
 
     public void OnExit()
     {
+        WarManager.Instance.EndTurnOnExit();
     }
 }

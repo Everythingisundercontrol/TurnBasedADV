@@ -62,7 +62,7 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 展示当前聚焦队伍信息
+    /// 展示当前聚焦队伍信息  //todo:增加数据
     /// </summary>
     public void ShowFocosOnUnit(string spritePath)
     {
@@ -71,11 +71,12 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// ui页面进入decision动作
+    /// ui页面进入decision动作    //todo:UI事件绑定，比如加buff
     /// </summary>
     public void DecisionOnEnterUI()
     {
-        
+        _view.TurnEndBtn.onClick.AddListener(TurnEndBtnOnClick);
+        _view.MoveBtn.onClick.AddListener(MoveBtnOnClick);
     }
 
     /// <summary>
@@ -85,6 +86,36 @@ public class LevelUICtrl : UICtrlBase
     {
         _model.OnClose();
         GameManager.Instance.StartCoroutine(QuitWar());
+    }
+    
+    /// <summary>
+    /// 开始按钮按下事件，正式开始游戏
+    /// </summary>
+    private void StartBtnOnClick()
+    {
+        //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
+        WarManager.Instance.LevelStartBtnOnClickEvent();
+        _view.ShowTeamInfo(true);
+        
+        //点击后，开始按钮关闭，回合结束按钮开启
+        _view.startBtnObj.SetActive(false);
+        _view.TurnEndBtnObj.SetActive(true);
+    }
+
+    /// <summary>
+    /// 回合结束按钮按下事件
+    /// </summary>
+    private void TurnEndBtnOnClick()
+    {
+        WarManager.Instance.LevelTurnEndBtnOnClickEvent();
+    }
+
+    /// <summary>
+    /// 移动按钮按下事件
+    /// </summary>
+    private void MoveBtnOnClick()
+    {
+        Debug.Log("MoveBtnOnClick");
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
@@ -99,15 +130,5 @@ public class LevelUICtrl : UICtrlBase
         UIManager.Instance.OpenWindow("AreaView.prefab");
     }
 
-    /// <summary>
-    /// 正式开始游戏
-    /// </summary>
-    private void StartBtnOnClick()
-    {
-        //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
-        WarManager.Instance.LevelStartBtnOnClickEvent();
-        _view.ShowTeamInfo(true);
-        _view.startBtnObj.SetActive(false);
-        _view.TurnEndBtnObj.SetActive(true);
-    }
+
 }

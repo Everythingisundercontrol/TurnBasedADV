@@ -11,6 +11,7 @@ public class LevelUIView : MonoBehaviour
     public Button TurnEndBtn;
     public GameObject startBtnObj;
     public Button startBtn;
+    public Button MoveBtn;
     public Text tp;
     public Image leaderPic;
 

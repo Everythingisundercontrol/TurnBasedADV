@@ -4,6 +4,7 @@ public class EndGameState : FsmState
 {
     public void OnEnter()
     {
+        WarManager.Instance.EndGameOnEnter();
         //todo:根据游戏状态决定结束游戏的对应事件
         switch (WarManager.Instance.Model.GameState)
         {
@@ -24,5 +25,6 @@ public class EndGameState : FsmState
 
     public void OnExit()
     {
+        WarManager.Instance.EndGameOnExit();
     }
 }

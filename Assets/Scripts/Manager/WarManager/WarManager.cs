@@ -87,7 +87,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         LoadMap(_level);
         Model.OnEnter(_jsPath);
         InitGameObject();
-        BindEvent();
+        SetUpBindEvent();
     }
 
     /// <summary>
@@ -107,6 +107,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             ChangePoint(pointID, point);
         }
 
+        //事件移除
         EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
 
         Model.GameStart();
@@ -117,9 +118,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     public void TurnInitOnEnter()
     {
-        Debug.Log("TurnInitOnEnter");
         Model.TurnStart();
         _ctrl.ShowTeamPoint(Model.TeamPoints);
+
         var leaderMemberID = Model.FocosOn.MemberID[0];
         var path = Model.MemberData[leaderMemberID].prefabPath;
         _ctrl.ShowFocosOnUnit(path);
@@ -140,6 +141,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void DecisionOnEnter()
     {
         Debug.Log("DecisionOnEnter");
+        _ctrl.DecisionOnEnterUI(); //UI事件绑定
+        DecisionBindEvent(); //场景事件绑定
+        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft,TeamMove);
     }
 
     /// <summary>
@@ -147,7 +151,63 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     public void DecisionOnExit()
     {
-        
+    }
+
+    /// <summary>
+    /// EndTurn进入
+    /// </summary>
+    public void EndTurnOnEnter()
+    {
+        Debug.Log("EndTurnOnEnter");
+    }
+
+    /// <summary>
+    /// EndTurn退出
+    /// </summary>
+    public void EndTurnOnExit()
+    {
+    }
+
+    /// <summary>
+    /// EndGame进入
+    /// </summary>
+    public void EndGameOnEnter()
+    {
+    }
+
+    /// <summary>
+    /// EndGame退出
+    /// </summary>
+    public void EndGameOnExit()
+    {
+    }
+
+    /// <summary>
+    /// Pause进入
+    /// </summary>
+    public void PauseOnEnter()
+    {
+    }
+
+    /// <summary>
+    /// Pause退出
+    /// </summary>
+    public void PauseOnExit()
+    {
+    }
+
+    /// <summary>
+    /// Battle进入
+    /// </summary>
+    public void BattleOnEnter()
+    {
+    }
+
+    /// <summary>
+    /// Battle退出
+    /// </summary>
+    public void BattleOnExit()
+    {
     }
 
     /// <summary>
@@ -159,11 +219,31 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
-    /// 事件绑定
+    /// 关卡界面回合结束按钮点击事件
     /// </summary>
-    private void BindEvent()
+    public void LevelTurnEndBtnOnClickEvent()
+    {
+        FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_EndTurnState);
+    }
+
+    public void LevelMoveBtnOnClickEvent()
+    {
+        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft,TeamMove);
+    }
+
+    /// <summary>
+    /// setUP阶段事件绑定
+    /// </summary>
+    private void SetUpBindEvent()
     {
         EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
+    }
+
+    /// <summary>
+    /// decision阶段事件绑定
+    /// </summary>
+    private void DecisionBindEvent()
+    {
     }
 
     /// <summary>
@@ -577,8 +657,74 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// <summary>
     /// 决策阶段鼠标左键点击
     /// </summary>
-    private void DecisionClickLeft()
+    private void DecisionClickLeft(Vector3 pos)
     {
+        if (Camera.main is null)
+        {
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(pos);
+        var hit = Physics2D.Raycast(ray.origin, ray.direction);
+        if (!hit.collider)
+        {
+            return;
+        }
+    }
+
+    /// <summary>
+    /// 队伍移动
+    /// </summary>
+    /// <param name="pos"></param>
+    private void TeamMove(Vector3 pos)
+    {
+        var destinationPointID = GetClickLeftPointID(pos);
+        Debug.Log(destinationPointID);
+        if (destinationPointID == null)
+        {
+            return;
+        }
+
+        var start = GetPointIDByUnitID(Model.FocosOn.unitID);
+        var dis = Model.PointsDistanceCalculation(start, destinationPointID);
+        var path = Model.PointsShortestPathCalculation(start, destinationPointID);
+        foreach (var PointID in path)
+        {
+            Debug.Log(": "+PointID);
+        }
+        Debug.Log(dis);
+    }
+
+    /// <summary>
+    /// 获取点击的Point的ID
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns>
+    private string GetClickLeftPointID(Vector3 pos)
+    {
+        if (Camera.main is null)
+        {
+            Debug.Log("Camera.main is null");
+            return null;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(pos);
+        var hit = Physics2D.Raycast(ray.origin, ray.direction);
+        if (!hit.collider)
+        {
+            Debug.Log("!hit.collider");
+            return null;
+        }
+
+        var pointID = PointCheck(hit.collider.gameObject);
+        if (pointID != null)
+        {
+            return pointID;
+        }
+
+        pointID = UnitCheck(hit.collider.gameObject);
+
+        return pointID;
     }
 
     /// <summary>
@@ -591,7 +737,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return null;
         }
 
-        var pointID = GetClickPointInfo(inputGameObject);
+        var pointID = GetPointIDFromClickPoint(inputGameObject);
         return pointID;
     }
 
@@ -605,14 +751,14 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return null;
         }
 
-        // var Uni
-        return null;
+        var PointID = GetPointIDFromClickUnit(inputGameObject);
+        return PointID;
     }
 
     /// <summary>
-    /// 获取点击的point在_pointGameObjects中的信息,可能返回null
+    /// 获取点击的point的PointID
     /// </summary>
-    private string GetClickPointInfo(GameObject inputGameObject)
+    private string GetPointIDFromClickPoint(GameObject inputGameObject)
     {
         foreach (var pair in _pointGameObjects)
         {
@@ -626,9 +772,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
-    /// 获取点击的Unit的pointID,可能返回null
+    /// 获取点击的Unit的pointID
     /// </summary>
-    private string GetClickUnitInfo(GameObject inputGameObject)
+    private string GetPointIDFromClickUnit(GameObject inputGameObject)
     {
         foreach (var pair in _unitGameObjects)
         {
@@ -736,5 +882,22 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _pointGameObjects.Remove(pointID);
         var newPoint = Object.Instantiate(inputGameObject, transform.position, transform.rotation, transform.parent);
         _pointGameObjects.Add(pointID, newPoint);
+    }
+
+    /// <summary>
+    /// 通过UnitID获取PointID
+    /// </summary>
+    /// <returns></returns>
+    private string GetPointIDByUnitID(string UnitID)
+    {
+        foreach (var pair in Model.PointModels)
+        {
+            if (pair.Value.unitID == UnitID)
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
     }
 }
