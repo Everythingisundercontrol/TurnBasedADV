@@ -29,11 +29,7 @@ public class UIManager : BaseSingleton<UIManager>, IMonoManager
     public void OnClear()
     {
     }
-
-    public LevelUICtrl GetLevelUICtrl()
-    {
-        return GetCtrl<LevelUICtrl>("LevelView.prefab");
-    }
+    
 
     /// <summary>
     /// 打开窗口
@@ -74,7 +70,7 @@ public class UIManager : BaseSingleton<UIManager>, IMonoManager
     /// <param name="param">参数</param>
     /// <typeparam name="T">泛型T，必须是UICtrlBase的继承类</typeparam>
     /// <returns></returns>
-    private T GetCtrl<T>(string windowName, params object[] param) where T : UICtrlBase
+    public T GetCtrl<T>(string windowName, params object[] param) where T : UICtrlBase
     {
         if (_allView.ContainsKey(windowName))
         {

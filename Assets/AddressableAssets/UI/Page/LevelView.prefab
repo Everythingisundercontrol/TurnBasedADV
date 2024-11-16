@@ -948,6 +948,7 @@ MonoBehaviour:
   TurnEndBtn: {fileID: 3452403599876184662}
   startBtnObj: {fileID: 1194528997265987492}
   startBtn: {fileID: 627955053717476088}
+  MoveBtnObj: {fileID: 2768691652665513725}
   MoveBtn: {fileID: 5265918212804083458}
   tp: {fileID: 1483042650455610647}
   leaderPic: {fileID: 4335243413973083078}

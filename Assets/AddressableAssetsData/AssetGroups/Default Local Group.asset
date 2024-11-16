@@ -27,6 +27,21 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26b25613143985d4fa8c0519a2a1d4ca
+    m_Address: eventData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2dcf09655b83c0344b9e1555447a4f17
+    m_Address: unitData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e55bfe517cad124fa36ac6f02b3c6ea
+    m_Address: pointData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4eba2992ed513a74080d1288d0488cb6
     m_Address: Point_02.jpg
     m_ReadOnly: 0
@@ -47,8 +62,33 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7864c279ede537a41978b5de996a4254
+    m_Address: level02.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 78a48b9e12b6bc941a5066cc6f2f1b53
+    m_Address: level01.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 81c97a10757797a48b8acf9d6c8d23f2
     m_Address: LevelView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d8fc6e7b11737546baa0475a050451d
+    m_Address: MapPointBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 958528ce6806c2b43b4635f478847f6d
+    m_Address: PointSelect.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a87ec479bd3163249a7637c57fdcb22b
+    m_Address: memberData.json
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

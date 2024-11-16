@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using SimpleJSON;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -13,7 +14,7 @@ using Object = UnityEngine.Object;
 public class AssetManager : BaseSingleton<AssetManager>, IMonoManager
 {
     private Dictionary<string, AsyncOperationHandle> _handleDict;
-    
+
     public void OnInit()
     {
         _handleDict = new Dictionary<string, AsyncOperationHandle>();
@@ -83,7 +84,7 @@ public class AssetManager : BaseSingleton<AssetManager>, IMonoManager
         Debug.Log("加载失败" + path);
         Release(path);
     }
-    
+
     /// <summary>
     /// 同步加载(单个资源)
     /// </summary>
@@ -117,7 +118,7 @@ public class AssetManager : BaseSingleton<AssetManager>, IMonoManager
 
         return asset;
     }
-    
+
     /// <summary>
     /// 释放handle
     /// </summary>
@@ -141,21 +142,22 @@ public class AssetManager : BaseSingleton<AssetManager>, IMonoManager
         Addressables.Release(_handleDict[path]);
         _handleDict.Remove(path);
     }
-    
+
     /// <summary>
     /// 异步加载场景
     /// </summary>
     /// <param name="path">场景path</param>
     /// <param name="callBack">回调中获取场景sceneInstance.Scene</param>
     /// <param name="loadSceneMode">single是替换当前场景，additive是在当前场景上追加新的场景</param>
-    public IEnumerator LoadSceneSync(string path, Action<SceneInstance> callBack, LoadSceneMode loadSceneMode = LoadSceneMode.Single)
+    public IEnumerator LoadSceneSync(string path, Action<SceneInstance> callBack,
+        LoadSceneMode loadSceneMode = LoadSceneMode.Single)
     {
         if (string.IsNullOrEmpty(path))
         {
             Debug.Log("路径不能为空");
             yield break;
         }
-        
+
         var sceneLoadHandle = Addressables.LoadSceneAsync(path, loadSceneMode);
         Debug.Log(sceneLoadHandle.DebugName);
         sceneLoadHandle.Completed += (handle) =>
@@ -198,26 +200,21 @@ public class AssetManager : BaseSingleton<AssetManager>, IMonoManager
         Resources.UnloadUnusedAssets();
         GC.Collect();
     }
-    
+
     /// <summary>
     /// 加载json文件
     /// </summary>
     /// <param name="fileName"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static T LoadJsonFile<T>(string fileName)
+    public T LoadJsonFile<T>(string fileName)
     {
-        var path = Path.Combine(Application.persistentDataPath, fileName);
-        var fileBytes = File.ReadAllBytes(path);
-        var js = Encoding.UTF8.GetString(fileBytes);
-        var records = JsonUtility.FromJson<T>(js);
-
-        if (records == null)
+        var textAsset = LoadAsset<TextAsset>(fileName);
+        if (!textAsset)
         {
             Debug.LogError(fileName + " is null");
         }
 
-        return records;
+        return JsonUtility.FromJson<T>(textAsset.text);
     }
-    
 }

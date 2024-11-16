@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class WarManager : BaseSingleton<WarManager>, IMonoManager
 {
     public WarModel Model;
 
     private List<GameObject> _lineList; //不确定有没有用
-    private Dictionary<string, GameObject> _pointGameObjects;
-    private Dictionary<string, GameObject> _unitGameObjects;
+    private Dictionary<string, GameObject> _pointGameObjects; //key:pointID
+    private Dictionary<string, GameObject> _unitGameObjects; //key:pointID
 
     private LevelUICtrl _ctrl; //获取UI信息
 
@@ -51,7 +54,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         UIManager.Instance.OpenWindow("LevelView.prefab");
 
-        _ctrl = UIManager.Instance.GetLevelUICtrl();
+        _ctrl = UIManager.Instance.GetCtrl<LevelUICtrl>("LevelView.prefab");
 
 
         FsmManager.Instance.WarFsmOnOpen();
@@ -103,8 +106,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             }
 
             Model.PointData[pointID].canNewTeam = false;
-            var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
-            ChangePoint(pointID, point);
+            ChangePoint(pointID, Model.PointData[pointID]);
         }
 
         //事件移除
@@ -119,12 +121,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void TurnInitOnEnter()
     {
         Model.TurnStart();
+        Debug.Log(Model.Rounds+" :: "+Model.TeamModels.Count);
         _ctrl.ShowTeamPoint(Model.TeamPoints);
-
-        var leaderMemberID = Model.FocosOn.MemberID[0];
-        var path = Model.MemberData[leaderMemberID].prefabPath;
-        _ctrl.ShowFocosOnUnit(path);
-
+        _ctrl.ShowFocosOnUnit();
         FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_DecisionState);
     }
 
@@ -143,7 +142,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         Debug.Log("DecisionOnEnter");
         _ctrl.DecisionOnEnterUI(); //UI事件绑定
         DecisionBindEvent(); //场景事件绑定
-        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft,TeamMove);
     }
 
     /// <summary>
@@ -151,6 +149,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     public void DecisionOnExit()
     {
+        _ctrl.DecisionOnExitUI();
     }
 
     /// <summary>
@@ -159,6 +158,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void EndTurnOnEnter()
     {
         Debug.Log("EndTurnOnEnter");
+        FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_TurnInitState);
     }
 
     /// <summary>
@@ -226,10 +226,97 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_EndTurnState);
     }
 
-    public void LevelMoveBtnOnClickEvent()
+    /// <summary>
+    /// 队伍移动
+    /// </summary>
+    public void TeamMove(string destinationPointID)
     {
-        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft,TeamMove);
+        var start = Model.FocosOnPointID;
+        var list = Model.PointsShortestPathCalculation(start, destinationPointID);
+        if (list == null)
+        {
+            list = Model.PointsShortestPathCalculation(destinationPointID, start);
+            if (list == null)
+            {
+                Debug.Log("list == null");
+                return;
+            }
+
+            list.Reverse();
+        }
+
+        var dis = list.Count - 1;
+        if (dis <= 0)
+        {
+            Debug.Log("dis <= 0");
+            return;
+        }
+
+        if (Model.TeamPoints < dis)
+        {
+            Debug.Log("TP不足" + Model.TeamPoints + " : " + dis);
+            return;
+        }
+
+
+        // model
+        Model.TeamPoints -= dis;
+        _ctrl.ShowTeamPoint(Model.TeamPoints);
+
+        for (var i = 0; i < list.Count - 1; i++)
+        {
+            TeamStepMove(list[i], list[i + 1]);
+        }
     }
+
+    public void MoveEventEnd()
+    {
+        _ctrl.MoveEventEnd();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void TeamStepMove(string startPointID, string nextPointID)
+    {
+        CheckNextPointUnit(startPointID, nextPointID);
+        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID))
+        {
+            //todo:事件触发
+            Debug.Log("事件触发");
+        }
+    }
+
+
+    private void CheckNextPointUnit(string startPointID, string nextPointID)
+    {
+        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
+        {
+            //todo:battle
+            Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
+            RemoveUnitByPointID(nextPointID);
+            Move(startPointID, nextPointID);
+            return;
+        }
+
+        Move(startPointID, nextPointID);
+    }
+
+    private void Move(string startPointID, string nextPointID)
+    {
+        Debug.Log(startPointID + " => " + nextPointID);
+
+        //model
+        Model.PointModels[nextPointID].unitID = Model.PointModels[startPointID].unitID;
+        Model.PointModels[startPointID].unitID = null;
+        Model.FocosOnPointID = nextPointID;
+
+        //view
+        _unitGameObjects[startPointID].transform.position = _pointGameObjects[nextPointID].transform.position;
+        _unitGameObjects.Add(nextPointID, _unitGameObjects[startPointID]);
+        _unitGameObjects.Remove(startPointID);
+    }
+
 
     /// <summary>
     /// setUP阶段事件绑定
@@ -313,12 +400,12 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
                 continue;
             }
 
-            CreateUnit(pointModel.Key);
+            StaticCreateUnit(pointModel.Key);
         }
     }
 
     /// <summary>
-    /// 事件初始化//暂时不做，没需求
+    /// 事件初始化   //暂时不做
     /// </summary>
     private void InitEvent()
     {
@@ -392,6 +479,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         var newPoint = Object.Instantiate(inputGameObject, inputVector3, Quaternion.identity, pointContainer.transform);
+
+        var newPointInfo = newPoint.GetComponent<PointInfo>();
+        newPointInfo.pointID = pointID;
+
         _pointGameObjects.Add(pointID, newPoint);
     }
 
@@ -462,9 +553,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// unit
     /// //////////////////////////////////
     /// <summary>
-    /// 创建地图单位
+    /// 通过静态数据创建地图单位
     /// </summary>
-    private void CreateUnit(string pointID)
+    private void StaticCreateUnit(string pointID)
     {
         var unitID = Model.PointModels[pointID].unitID;
 
@@ -474,13 +565,13 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return;
         }
 
-        CreateEnemy(pointID);
+        StaticCreateEnemy(pointID);
     }
 
     /// <summary>
-    /// 创建敌人
+    /// 初始化时通过静态数据创建敌人
     /// </summary>
-    private void CreateEnemy(string pointID)
+    private void StaticCreateEnemy(string pointID)
     {
         //model
         var unitID = Model.PointModels[pointID].unitID;
@@ -489,7 +580,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var js = JsonUtility.ToJson(unit);
         unit = JsonUtility.FromJson<Unit>(js);
 
-        Model.EnemyModels.Add(pointID, unit);
+        Model.EnemyModels.Add(unit.unitID, unit);
 
         FillInMemberModel(unit);
 
@@ -520,18 +611,18 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     private void StaticCreateTeam(string pointID)
     {
         //model
-        var unitID = Model.PointModels[pointID].unitID;
-        var unit = Model.UnitData[unitID];
+        var unitID = Model.PointModels[pointID].unitID; //获取该点位上的unitID
+        var unit = Model.UnitData[unitID]; //在UnitData中查找该unit
 
-        var js = JsonUtility.ToJson(unit);
+        var js = JsonUtility.ToJson(unit); //深拷贝
         unit = JsonUtility.FromJson<Unit>(js);
 
-        Model.TeamModels.Add(pointID, unit);
+        Model.TeamModels.Add(unit.unitID, unit); //将该unit加入我方队伍动态数据中
 
-        FillInMemberModel(unit);
+        FillInMemberModel(unit); //填入member的数据
 
         //view
-        var point = Model.PointData[pointID];
+        var point = Model.PointData[pointID]; //获取点位data信息
         var position = new Vector3
         {
             x = point.positionX,
@@ -545,7 +636,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return;
         }
 
-        var path = Model.MemberData[unit.MemberID[0]].prefabPath;
+        var path = Model.MemberData[unit.MemberID[0]].prefabPath; //获取大头照的路径
         var unitContainer = GameObject.Find("Units");
 
         CreateUnitObj(pointID, position, path, unitContainer);
@@ -560,7 +651,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var js = JsonUtility.ToJson(unit);
         unit = JsonUtility.FromJson<Unit>(js); //深拷贝
 
-        Model.TeamModels.Add(pointID, unit);
+        Model.TeamModels.Add(unit.unitID, unit);
         Model.PointModels[pointID].unitID = unit.unitID;
 
         FillInMemberModel(unit);
@@ -585,7 +676,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         CreateUnitObj(pointID, position, path, unitContainer);
 
-        Model.FocosOn = unit; //聚焦改变
+        Model.FocosOnPointID = pointID; //聚焦改变
     }
 
     /// <summary>
@@ -628,7 +719,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// 事件
     /// ////////////////////////////////////
     /// <summary>
-    /// SetUp阶段鼠标左键点击，检测是否有东西
+    /// SetUp阶段鼠标左键点击，检测是否有东西   //todo:重写一遍，不需要反向查找了
     /// </summary>
     /// <param name="pos"></param>
     private void SetUpClickLeft(Vector3 pos)
@@ -645,152 +736,18 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             return;
         }
 
-        var pointID = PointCheck(hit.collider.gameObject);
-        if (pointID == null)
+        var pointInfo = hit.collider.gameObject.GetComponent<PointInfo>();
+        if (!pointInfo)
         {
             return;
         }
 
-        TeamCreateAbleCheck(pointID);
-    }
-
-    /// <summary>
-    /// 决策阶段鼠标左键点击
-    /// </summary>
-    private void DecisionClickLeft(Vector3 pos)
-    {
-        if (Camera.main is null)
-        {
-            return;
-        }
-
-        var ray = Camera.main.ScreenPointToRay(pos);
-        var hit = Physics2D.Raycast(ray.origin, ray.direction);
-        if (!hit.collider)
-        {
-            return;
-        }
-    }
-
-    /// <summary>
-    /// 队伍移动
-    /// </summary>
-    /// <param name="pos"></param>
-    private void TeamMove(Vector3 pos)
-    {
-        var destinationPointID = GetClickLeftPointID(pos);
-        Debug.Log(destinationPointID);
-        if (destinationPointID == null)
-        {
-            return;
-        }
-
-        var start = GetPointIDByUnitID(Model.FocosOn.unitID);
-        var dis = Model.PointsDistanceCalculation(start, destinationPointID);
-        var path = Model.PointsShortestPathCalculation(start, destinationPointID);
-        foreach (var PointID in path)
-        {
-            Debug.Log(": "+PointID);
-        }
-        Debug.Log(dis);
-    }
-
-    /// <summary>
-    /// 获取点击的Point的ID
-    /// </summary>
-    /// <param name="pos"></param>
-    /// <returns></returns>
-    private string GetClickLeftPointID(Vector3 pos)
-    {
-        if (Camera.main is null)
-        {
-            Debug.Log("Camera.main is null");
-            return null;
-        }
-
-        var ray = Camera.main.ScreenPointToRay(pos);
-        var hit = Physics2D.Raycast(ray.origin, ray.direction);
-        if (!hit.collider)
-        {
-            Debug.Log("!hit.collider");
-            return null;
-        }
-
-        var pointID = PointCheck(hit.collider.gameObject);
-        if (pointID != null)
-        {
-            return pointID;
-        }
-
-        pointID = UnitCheck(hit.collider.gameObject);
-
-        return pointID;
-    }
-
-    /// <summary>
-    /// 检测是否是点位
-    /// </summary>
-    private string PointCheck(GameObject inputGameObject)
-    {
-        if (!_pointGameObjects.ContainsValue(inputGameObject))
-        {
-            return null;
-        }
-
-        var pointID = GetPointIDFromClickPoint(inputGameObject);
-        return pointID;
-    }
-
-    /// <summary>
-    /// 检测是否是单位
-    /// </summary>
-    private string UnitCheck(GameObject inputGameObject)
-    {
-        if (!_unitGameObjects.ContainsValue(inputGameObject))
-        {
-            return null;
-        }
-
-        var PointID = GetPointIDFromClickUnit(inputGameObject);
-        return PointID;
-    }
-
-    /// <summary>
-    /// 获取点击的point的PointID
-    /// </summary>
-    private string GetPointIDFromClickPoint(GameObject inputGameObject)
-    {
-        foreach (var pair in _pointGameObjects)
-        {
-            if (pair.Value.Equals(inputGameObject))
-            {
-                return pair.Key;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 获取点击的Unit的pointID
-    /// </summary>
-    private string GetPointIDFromClickUnit(GameObject inputGameObject)
-    {
-        foreach (var pair in _unitGameObjects)
-        {
-            if (pair.Value.Equals(inputGameObject))
-            {
-                return pair.Key;
-            }
-        }
-
-        return null;
+        TeamCreateAbleCheck(pointInfo.pointID);
     }
 
     /// <summary>
     /// 检查该点位是否可创建队伍并判断unit是否为空
     /// </summary>
-    /// <param name="inputGameObject"></param>
     private void TeamCreateAbleCheck(string pointID)
     {
         if (!Model.PointData[pointID].canNewTeam)
@@ -828,10 +785,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         DynamicCreateTeam(pointID, unit);
 
         Model.StartAble = true;
-        Model.PointData[pointID].canNewTeam = false;
 
-        var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
-        ChangePoint(pointID, point);
+        Model.PointData[pointID].canNewTeam = false;
+        ChangePoint(pointID, Model.PointData[pointID]);
 
         _ctrl.CheckStartBtnState();
         //todo: 新页面，编队与携带物资
@@ -841,7 +797,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// 工具
     /// ////////////////////////////////
     /// <summary>
-    /// 通过ID获得点位model
+    /// 通过ID获得点位data
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -856,48 +812,178 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         return null;
     }
 
-    /// <summary>
-    /// 通过ID获得点位gameobject
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    private GameObject GETPointViewByID(string id)
-    {
-        if (_pointGameObjects.ContainsKey(id))
-        {
-            return _pointGameObjects[id];
-        }
-
-        Debug.LogError("getPointByID is null");
-        return null;
-    }
 
     /// <summary>
     /// 改变点的类型
     /// </summary>
-    private void ChangePoint(string pointID, GameObject inputGameObject)
+    private void ChangePoint(string pointID, PointData pointData)
     {
-        var transform = _pointGameObjects[pointID].transform;
         Object.Destroy(_pointGameObjects[pointID]);
         _pointGameObjects.Remove(pointID);
-        var newPoint = Object.Instantiate(inputGameObject, transform.position, transform.rotation, transform.parent);
-        _pointGameObjects.Add(pointID, newPoint);
+        CreatePoints(pointData);
     }
 
     /// <summary>
-    /// 通过UnitID获取PointID
+    /// 移除场景中Unit
     /// </summary>
-    /// <returns></returns>
-    private string GetPointIDByUnitID(string UnitID)
+    /// <param name="pointID"></param>
+    private void RemoveUnitByPointID(string pointID)
     {
-        foreach (var pair in Model.PointModels)
+        var unitID = Model.PointModels[pointID].unitID;
+        Model.PointModels[pointID].unitID = null;
+        if (Model.TeamModels.ContainsKey(unitID))
         {
-            if (pair.Value.unitID == UnitID)
-            {
-                return pair.Key;
-            }
+            Model.TeamModels.Remove(unitID);
         }
 
-        return null;
+        if (Model.EnemyModels.ContainsKey(unitID))
+        {
+            Model.EnemyModels.Remove(unitID);
+        }
+
+        Object.Destroy(_unitGameObjects[pointID]);
+        _unitGameObjects.Remove(pointID);
     }
+
+    // /// <summary>
+    // /// 通过UnitID获取PointID
+    // /// </summary>
+    // /// <returns></returns>
+    // private string GetPointIDByUnitID(string UnitID)
+    // {
+    //     foreach (var pair in Model.PointModels)
+    //     {
+    //         if (pair.Value.unitID == UnitID)
+    //         {
+    //             return pair.Key;
+    //         }
+    //     }
+    //
+    //     return null;
+    // }
+
+    // /// <summary>
+    // /// 获取的pointObj的PointID
+    // /// </summary>
+    // private string GetPointIdbyPoint(GameObject inputGameObject)
+    // {
+    //     foreach (var pair in _pointGameObjects)
+    //     {
+    //         if (pair.Value.Equals(inputGameObject))
+    //         {
+    //             return pair.Key;
+    //         }
+    //     }
+    //
+    //     return null;
+    // }
+    //
+    // /// <summary>
+    // /// 获取的UnitObj的pointID
+    // /// </summary>
+    // private string GetPointIDByUnit(GameObject inputGameObject)
+    // {
+    //     foreach (var pair in _unitGameObjects)
+    //     {
+    //         if (pair.Value.Equals(inputGameObject))
+    //         {
+    //             return pair.Key;
+    //         }
+    //     }
+    //
+    //     return null;
+    // }
+    // /// <summary>
+    // /// 通过ID获得点位gameobject
+    // /// </summary>
+    // /// <param name="id"></param>
+    // /// <returns></returns>
+    // private GameObject GETPointViewByID(string id)
+    // {
+    //     if (_pointGameObjects.ContainsKey(id))
+    //     {
+    //         return _pointGameObjects[id];
+    //     }
+    //
+    //     Debug.LogError("getPointByID is null");
+    //     return null;
+    // }
+    // /// <summary>
+    // /// 决策阶段鼠标左键点击
+    // /// </summary>
+    // private void DecisionClickLeft(Vector3 pos)
+    // {
+    //     if (Camera.main is null)
+    //     {
+    //         return;
+    //     }
+    //
+    //     var ray = Camera.main.ScreenPointToRay(pos);
+    //     var hit = Physics2D.Raycast(ray.origin, ray.direction);
+    //     if (!hit.collider)
+    //     {
+    //         return;
+    //     }
+    // }
+    //
+    //
+    // /// <summary>
+    // /// 获取点击的Point的ID
+    // /// </summary>
+    // /// <param name="pos"></param>
+    // /// <returns></returns>
+    // private string GetClickLeftPointID(Vector3 pos)
+    // {
+    //     if (Camera.main is null)
+    //     {
+    //         Debug.Log("Camera.main is null");
+    //         return null;
+    //     }
+    //
+    //     var ray = Camera.main.ScreenPointToRay(pos);
+    //     var hit = Physics2D.Raycast(ray.origin, ray.direction);
+    //     if (!hit.collider)
+    //     {
+    //         Debug.Log("!hit.collider");
+    //         return null;
+    //     }
+    //
+    //     var pointID = PointCheck(hit.collider.gameObject);
+    //     if (pointID != null)
+    //     {
+    //         return pointID;
+    //     }
+    //
+    //     pointID = UnitCheck(hit.collider.gameObject);
+    //
+    //     return pointID;
+    // }
+
+    // /// <summary>
+    // /// 检测是否是点位
+    // /// </summary>
+    // private string PointCheck(GameObject inputGameObject)
+    // {
+    //     if (!_pointGameObjects.ContainsValue(inputGameObject))
+    //     {
+    //         return null;
+    //     }
+    //
+    //     var pointID = GetPointIdbyPoint(inputGameObject);
+    //     return pointID;
+    // }
+
+    // /// <summary>
+    // /// 检测是否是单位
+    // /// </summary>
+    // private string UnitCheck(GameObject inputGameObject)
+    // {
+    //     if (!_unitGameObjects.ContainsValue(inputGameObject))
+    //     {
+    //         return null;
+    //     }
+    //
+    //     var PointID = GetPointIDByUnit(inputGameObject);
+    //     return PointID;
+    // }
 }

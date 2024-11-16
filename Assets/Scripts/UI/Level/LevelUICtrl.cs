@@ -1,6 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 public class LevelUICtrl : UICtrlBase
@@ -40,7 +38,7 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 开始按钮是否可交互
+    /// 检查开始按钮是否可交互
     /// </summary>
     public void CheckStartBtnState()
     {
@@ -64,9 +62,13 @@ public class LevelUICtrl : UICtrlBase
     /// <summary>
     /// 展示当前聚焦队伍信息  //todo:增加数据
     /// </summary>
-    public void ShowFocosOnUnit(string spritePath)
+    public void ShowFocosOnUnit()
     {
-        var sp = AssetManager.Instance.LoadAsset<Sprite>(spritePath);
+        var focosOnPoint = WarManager.Instance.Model.PointModels[WarManager.Instance.Model.FocosOnPointID];
+        var focosOnUnitID = focosOnPoint.unitID;
+        var leaderMemberID = WarManager.Instance.Model.TeamModels[focosOnUnitID].MemberID[0];
+        var path = WarManager.Instance.Model.MemberData[leaderMemberID].prefabPath;
+        var sp = AssetManager.Instance.LoadAsset<Sprite>(path);
         _view.SetLeaderPic(sp);
     }
 
@@ -75,8 +77,30 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     public void DecisionOnEnterUI()
     {
+        System.Threading.Thread.Sleep(1000);
+        _view.ShowTeamInfo(true);
+        _view.TurnEndBtnObj.SetActive(true);
         _view.TurnEndBtn.onClick.AddListener(TurnEndBtnOnClick);
         _view.MoveBtn.onClick.AddListener(MoveBtnOnClick);
+    }
+
+    /// <summary>
+    /// ui页面退出decision动作
+    /// </summary>
+    public void DecisionOnExitUI()
+    {
+        _view.ShowTeamInfo(false);
+        _view.TurnEndBtnObj.SetActive(false);
+        _view.TurnEndBtn.onClick.RemoveListener(TurnEndBtnOnClick);
+        _view.MoveBtn.onClick.RemoveListener(MoveBtnOnClick);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public void MoveEventEnd()
+    {
+        _view.MoveBtn.interactable = true;
     }
 
     /// <summary>
@@ -87,7 +111,7 @@ public class LevelUICtrl : UICtrlBase
         _model.OnClose();
         GameManager.Instance.StartCoroutine(QuitWar());
     }
-    
+
     /// <summary>
     /// 开始按钮按下事件，正式开始游戏
     /// </summary>
@@ -95,11 +119,9 @@ public class LevelUICtrl : UICtrlBase
     {
         //todo: 在有编队之前为不可点击状态，warFsm进入TurnInitState
         WarManager.Instance.LevelStartBtnOnClickEvent();
-        _view.ShowTeamInfo(true);
-        
+
         //点击后，开始按钮关闭，回合结束按钮开启
         _view.startBtnObj.SetActive(false);
-        _view.TurnEndBtnObj.SetActive(true);
     }
 
     /// <summary>
@@ -107,6 +129,7 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     private void TurnEndBtnOnClick()
     {
+        
         WarManager.Instance.LevelTurnEndBtnOnClickEvent();
     }
 
@@ -116,6 +139,8 @@ public class LevelUICtrl : UICtrlBase
     private void MoveBtnOnClick()
     {
         Debug.Log("MoveBtnOnClick");
+        UIManager.Instance.OpenWindow("PointSelect.prefab");
+        _view.MoveBtn.interactable = false;
     }
 
     // ReSharper disable Unity.PerformanceAnalysis
@@ -129,6 +154,4 @@ public class LevelUICtrl : UICtrlBase
         WarManager.Instance.OnQuit();
         UIManager.Instance.OpenWindow("AreaView.prefab");
     }
-
-
 }

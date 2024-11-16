@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7112918348194956580}
   - component: {fileID: 4747066764031932655}
   - component: {fileID: 7674145497128049711}
+  - component: {fileID: -5619473547447550587}
   m_Layer: 0
   m_Name: Point
   m_TagString: Untagged
@@ -108,3 +109,16 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 10.24, y: 10.24}
   m_EdgeRadius: 0
+--- !u!114 &-5619473547447550587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2634183328932002437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcfb015d26ba4c2480ecebd049d671bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PointID: 

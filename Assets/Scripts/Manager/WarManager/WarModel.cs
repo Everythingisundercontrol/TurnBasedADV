@@ -2,16 +2,19 @@
 
 public class WarModel
 {
-    public Dictionary<string, Point> PointModels; //动态,key:pointID
-    public Dictionary<string, Unit> TeamModels;
-    public Dictionary<string, Unit> EnemyModels;
+    public Dictionary<string, Point> PointModels; //动态数据，但从配置文件中获取数据,key:pointID
+
+
+    public Dictionary<string, Unit> TeamModels; //动态,key:UnitID
+    public Dictionary<string, Unit> EnemyModels; //动态,key:UnitID
 
     public Dictionary<string, List<Member>> MemberModels; //动态,key:UnitID
 
-    public Dictionary<string, PointData> PointData; //静态
-    public Dictionary<string, Unit> UnitData;
-    public Dictionary<string, Event> EventData;
-    public Dictionary<string, Member> MemberData;
+
+    public Dictionary<string, PointData> PointData; //静态,key:PointID
+    public Dictionary<string, Unit> UnitData; //静态,key:UnitID
+    public Dictionary<string, Event> EventData; //静态,key:EventID
+    public Dictionary<string, Member> MemberData; //静态,key:MemberID
 
     public bool StartAble; //是否可以开始游戏
     public GameStateEnum GameState; //当前游戏状态
@@ -19,7 +22,7 @@ public class WarModel
     public int TeamPoints; //队伍行动值
     public int Rounds; //回合数
 
-    public Unit FocosOn; //聚焦队伍
+    public string FocosOnPointID; //聚焦点位ID
 
     /// <summary>
     /// 初始化
@@ -82,8 +85,9 @@ public class WarModel
     /// </summary>
     public void TurnStart()
     {
-        Rounds++;
-        TeamPoints += Rounds * (TeamModels.Count + 1); //可能要改？？
+        Rounds += 1;
+        TeamPoints = Rounds;
+        // TeamPoints += Rounds * (TeamModels.Count + 1); //可能要改？？
         MemberAPReset();
     }
 
@@ -123,14 +127,14 @@ public class WarModel
         return null;
     }
 
-    /// <summary>
-    /// 计算两点间最短距离
-    /// </summary>
-    public int PointsDistanceCalculation(string start, string end)
-    {
-        var distance = PointsShortestPathCalculation(start, end).Count;
-        return distance - 1;
-    }
+    // /// <summary>
+    // /// 计算两点间最短距离
+    // /// </summary>
+    // public int PointsDistanceCalculation(string start, string end)
+    // {
+    //     var distance = PointsShortestPathCalculation(start, end).Count;
+    //     return distance - 1;
+    // }
 
     /// <summary>
     /// 成员Ap重置
@@ -147,11 +151,11 @@ public class WarModel
     }
 
     /// <summary>
-    /// 加载动态数据
+    /// 加载point的动态数据
     /// </summary>
     private void LoadPointModel(string path)
     {
-        var points = AssetManager.LoadJsonFile<PointList>(path).Points;
+        var points = AssetManager.Instance.LoadJsonFile<PointList>(path).Points;
 
         foreach (var point in points)
         {
@@ -175,7 +179,7 @@ public class WarModel
     /// </summary>
     private void LoadPointData()
     {
-        var pointDatas = AssetManager.LoadJsonFile<PointDataList>("pointData.json").PointDatas;
+        var pointDatas = AssetManager.Instance.LoadJsonFile<PointDataList>("pointData.json").PointDatas;
 
         if (pointDatas == null)
         {
@@ -203,7 +207,7 @@ public class WarModel
     /// </summary>
     private void LoadUnit()
     {
-        var units = AssetManager.LoadJsonFile<UnitList>("unitData.json").Units;
+        var units = AssetManager.Instance.LoadJsonFile<UnitList>("unitData.json").Units;
         if (units == null)
         {
             return;
@@ -234,7 +238,7 @@ public class WarModel
     /// </summary>
     private void LoadMember()
     {
-        var members = AssetManager.LoadJsonFile<MemberList>("memberData.json").Members;
+        var members = AssetManager.Instance.LoadJsonFile<MemberList>("memberData.json").Members;
         if (members == null)
         {
             return;
@@ -252,7 +256,7 @@ public class WarModel
     /// </summary>
     private void LoadEvent()
     {
-        var events = AssetManager.LoadJsonFile<EventList>("eventData.json").Events;
+        var events = AssetManager.Instance.LoadJsonFile<EventList>("eventData.json").Events;
         if (events == null)
         {
             return;

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 350599484782143069}
   - component: {fileID: 2459419518279682622}
   - component: {fileID: 1038143554427787516}
+  - component: {fileID: -9078412962787611239}
   m_Layer: 9
   m_Name: CNTPoint
   m_TagString: Untagged
@@ -108,3 +109,16 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 10.24, y: 10.24}
   m_EdgeRadius: 0
+--- !u!114 &-9078412962787611239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4840503405532402118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcfb015d26ba4c2480ecebd049d671bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PointID: 

@@ -1,0 +1,4 @@
+{"PointDatas":[{"pointID":"001","canNewTeam":true,"nextPoints":["002"],"positionX":0.0,"positionY":0.0},
+{"pointID":"002","canNewTeam":false,"nextPoints":["003"],"positionX":1.0,"positionY":0.0},
+{"pointID":"003","canNewTeam":false,"nextPoints":["004"],"positionX":2.0,"positionY":0.0},
+{"pointID":"004","canNewTeam":false,"nextPoints":[],"positionX":2.0,"positionY":2.0}]}

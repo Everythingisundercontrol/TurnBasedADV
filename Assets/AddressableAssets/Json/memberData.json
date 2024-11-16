@@ -1,0 +1,3 @@
+{"Members":[
+{"memberID":"member_01","prefabPath":"member_01.gif","AP":1,"name":"test01","HP":100,"MP":100},
+{"memberID":"member_02","prefabPath":"member_02.gif","AP":3,"name":"test02","HP":90,"MP":110}]}
