@@ -19,10 +19,41 @@ public class WarModel
     public bool StartAble; //是否可以开始游戏
     public GameStateEnum GameState; //当前游戏状态
 
-    public int TeamPoints; //队伍行动值
-    public int Rounds; //回合数
+    public int TeamPoints
+    {
+        get => _teamPoints;
+        set
+        {
+            if (_teamPoints == value)
+            {
+                return;
+            }
+
+            _teamPoints = value;
+            EventManager.Instance.Dispatch(EventName.TpChange);
+        }
+    }
+
+    public int Rounds
+    {
+        get => _rounds;
+        set
+        {
+            if (_rounds == value)
+            {
+                return;
+            }
+
+            _rounds = value;
+            EventManager.Instance.Dispatch(EventName.RoundsChange);
+        }
+    }
 
     public string FocosOnPointID; //聚焦点位ID
+
+
+    private int _teamPoints; //队伍行动值
+    private int _rounds; //回合数
 
     /// <summary>
     /// 初始化
@@ -85,9 +116,8 @@ public class WarModel
     /// </summary>
     public void TurnStart()
     {
-        Rounds += 1;
-        TeamPoints = Rounds;
-        // TeamPoints += Rounds * (TeamModels.Count + 1); //可能要改？？
+        Rounds++;
+        TeamPoints = Rounds * TeamModels.Count; //可能要改？？
         MemberAPReset();
     }
 
@@ -106,20 +136,22 @@ public class WarModel
             var (current, path) = queue.Dequeue();
             var currentPointID = current.pointID;
 
-            if (!visited.Contains(currentPointID))
+            if (visited.Contains(currentPointID))
             {
-                visited.Add(currentPointID);
-                if (currentPointID == end)
-                {
-                    return path;
-                }
+                continue;
+            }
 
-                foreach (var nextPoint in PointData[currentPointID].nextPoints)
+            visited.Add(currentPointID);
+            if (currentPointID == end)
+            {
+                return path;
+            }
+
+            foreach (var nextPoint in PointData[currentPointID].nextPoints)
+            {
+                if (!visited.Contains(nextPoint))
                 {
-                    if (!visited.Contains(nextPoint))
-                    {
-                        queue.Enqueue((PointModels[nextPoint], new List<string>(path) {nextPoint}));
-                    }
+                    queue.Enqueue((PointModels[nextPoint], new List<string>(path) {nextPoint}));
                 }
             }
         }

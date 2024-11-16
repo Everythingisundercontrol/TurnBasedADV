@@ -7,6 +7,7 @@ public class PointSelectView : MonoBehaviour
 {
     public Dictionary<string, GameObject> MapPointDic;
     public Button Mask;
+
     /// <summary>
     /// 打开窗口
     /// </summary>
@@ -25,6 +26,12 @@ public class PointSelectView : MonoBehaviour
             return;
         }
 
+        foreach (var pair in MapPointDic)
+        {
+            Destroy(pair.Value);
+        }
+
+        MapPointDic.Clear();
         gameObject.SetActive(false);
     }
 }

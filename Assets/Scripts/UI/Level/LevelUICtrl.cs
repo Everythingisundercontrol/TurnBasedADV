@@ -54,8 +54,9 @@ public class LevelUICtrl : UICtrlBase
     /// <summary>
     /// 展示Tp
     /// </summary>
-    public void ShowTeamPoint(int tp)
+    public void ShowTeamPoint()
     {
+        var tp = WarManager.Instance.Model.TeamPoints;
         _view.SetTp(tp);
     }
 
@@ -73,11 +74,40 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
+    /// ui页面进入SetUp动作
+    /// </summary>
+    public void SetUpOnEnterUI()
+    {
+    }
+
+    /// <summary>
+    /// ui页面退出SetUp动作
+    /// </summary>
+    public void SetUpOnExitUI()
+    {
+        ShowFocosOnUnit();
+    }
+
+    /// <summary>
+    /// ui页面进入TurnInit动作
+    /// </summary>
+    public void TurnInitOnEnterUI()
+    {
+        // ShowTeamPoint();
+    }
+
+    /// <summary>
+    /// ui页面退出TurnInit动作
+    /// </summary>
+    public void TurnInitOnExitUI()
+    {
+    }
+
+    /// <summary>
     /// ui页面进入decision动作    //todo:UI事件绑定，比如加buff
     /// </summary>
     public void DecisionOnEnterUI()
     {
-        System.Threading.Thread.Sleep(1000);
         _view.ShowTeamInfo(true);
         _view.TurnEndBtnObj.SetActive(true);
         _view.TurnEndBtn.onClick.AddListener(TurnEndBtnOnClick);
@@ -96,7 +126,7 @@ public class LevelUICtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 
+    /// 移动结束，MoveBtn启用
     /// </summary>
     public void MoveEventEnd()
     {
@@ -129,7 +159,6 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     private void TurnEndBtnOnClick()
     {
-        
         WarManager.Instance.LevelTurnEndBtnOnClickEvent();
     }
 

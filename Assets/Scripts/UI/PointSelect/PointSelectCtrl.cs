@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class PointSelectCtrl : UICtrlBase
 {
-    public Camera mainCamara;
     private PointSelectView _view;
     private PointSelectModel _model;
 
@@ -38,11 +37,10 @@ public class PointSelectCtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 创建button
+    /// 对应点位位置上创建button，并挂载事件
     /// </summary>
     private void ButtonCreate()
     {
-        mainCamara = Camera.main;
         _view.MapPointDic = new Dictionary<string, GameObject>();
         var prefab = AssetManager.Instance.LoadAsset<GameObject>("MapPointBtn.prefab");
         foreach (var pointID in WarManager.Instance.Model.PointModels.Keys)
@@ -52,11 +50,12 @@ public class PointSelectCtrl : UICtrlBase
             button.transform.position = position;
             button.name = pointID;
             button.GetComponent<Button>().onClick.AddListener(() => PointButtonOnClick(button.GetComponent<Button>()));
+            _view.MapPointDic.Add(button.name, button);
         }
     }
 
     /// <summary>
-    /// 
+    /// 获取点位位置
     /// </summary>
     /// <param name="pointID"></param>
     /// <returns></returns>
@@ -76,18 +75,19 @@ public class PointSelectCtrl : UICtrlBase
     }
 
     /// <summary>
-    /// 
+    ///  点位点击事件
     /// </summary>
     private void PointButtonOnClick(Button button)
     {
         Debug.Log(button.name);
         WarManager.Instance.TeamMove(button.name);
         WarManager.Instance.MoveEventEnd();
+        
         UIManager.Instance.CloseWindow("PointSelect.prefab");
     }
 
     /// <summary>
-    /// 
+    /// 点击非点位事件，退出点位选择
     /// </summary>
     private void MaskOnClick()
     {

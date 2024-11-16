@@ -79,6 +79,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         UIManager.Instance.CloseWindow("LevelView.prefab");
 
         Model.OnExit();
+        //监听数值变化事件结束
+        EventManager.Instance.RemoveListener(EventName.RoundsChange, RoundsChangeEvent);
+        EventManager.Instance.RemoveListener(EventName.TpChange, TeamPointChangeEvent);
+        EventManager.Instance.RemoveListener(EventName.FocosOnUnitChange, FocosOnUnitChangeEvent);
     }
 
     /// <summary>
@@ -113,6 +117,12 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
 
         Model.GameStart();
+        _ctrl.SetUpOnExitUI();
+
+        //监听TP/Ap/rounds数值变化
+        EventManager.Instance.AddListener(EventName.RoundsChange, RoundsChangeEvent);
+        EventManager.Instance.AddListener(EventName.TpChange, TeamPointChangeEvent);
+        EventManager.Instance.AddListener(EventName.FocosOnUnitChange, FocosOnUnitChangeEvent);
     }
 
     /// <summary>
@@ -121,9 +131,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void TurnInitOnEnter()
     {
         Model.TurnStart();
-        Debug.Log(Model.Rounds+" :: "+Model.TeamModels.Count);
-        _ctrl.ShowTeamPoint(Model.TeamPoints);
-        _ctrl.ShowFocosOnUnit();
+        _ctrl.TurnInitOnEnterUI();
         FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_DecisionState);
     }
 
@@ -261,7 +269,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         // model
         Model.TeamPoints -= dis;
-        _ctrl.ShowTeamPoint(Model.TeamPoints);
+        // _ctrl.ShowTeamPoint();
 
         for (var i = 0; i < list.Count - 1; i++)
         {
@@ -269,17 +277,21 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
     }
 
+    /// <summary>
+    /// 队伍移动结束
+    /// </summary>
     public void MoveEventEnd()
     {
         _ctrl.MoveEventEnd();
     }
 
     /// <summary>
-    /// 
+    /// 队伍移动拆分成每一步
     /// </summary>
     private void TeamStepMove(string startPointID, string nextPointID)
     {
         CheckNextPointUnit(startPointID, nextPointID);
+
         if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID))
         {
             //todo:事件触发
@@ -287,21 +299,34 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
     }
 
-
+    /// <summary>
+    /// 检测下一步是否有敌方单位/我方单位 
+    /// </summary>
+    /// <param name="startPointID"></param>
+    /// <param name="nextPointID"></param>
     private void CheckNextPointUnit(string startPointID, string nextPointID)
     {
         if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
         {
+            //if ifkindness == false
             //todo:battle
             Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
             RemoveUnitByPointID(nextPointID);
             Move(startPointID, nextPointID);
+
+            //if ifkindness == true
+            //位置交换
             return;
         }
 
         Move(startPointID, nextPointID);
     }
 
+    /// <summary>
+    /// 单位移动动作
+    /// </summary>
+    /// <param name="startPointID"></param>
+    /// <param name="nextPointID"></param>
     private void Move(string startPointID, string nextPointID)
     {
         Debug.Log(startPointID + " => " + nextPointID);
@@ -791,6 +816,30 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         _ctrl.CheckStartBtnState();
         //todo: 新页面，编队与携带物资
+    }
+
+    /// <summary>
+    /// 回合数变化事件
+    /// </summary>
+    private void RoundsChangeEvent()
+    {
+        Debug.Log("RoundsChangeEvent");
+    }
+
+    /// <summary>
+    /// TP变化事件
+    /// </summary>
+    private void TeamPointChangeEvent()
+    {
+        _ctrl.ShowTeamPoint();
+    }
+
+    /// <summary>
+    /// 聚焦单位变化事件
+    /// </summary>
+    private void FocosOnUnitChangeEvent()
+    {
+        _ctrl.ShowFocosOnUnit();
     }
 
     /// ////////////////////////////////
