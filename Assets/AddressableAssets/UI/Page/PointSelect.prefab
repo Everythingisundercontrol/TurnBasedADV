@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6455028775092544789}
   - component: {fileID: 2949804712272692373}
   - component: {fileID: 6717843375013843311}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Mask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 5523603329039003784}
   - component: {fileID: 1757180528627841691}
   - component: {fileID: 1648445447566027906}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PointSelect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 290dbaf4aa168ce4e8fe9bc0e0f17162, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamara: {fileID: 0}
 --- !u!114 &1648445447566027906
 MonoBehaviour:
   m_ObjectHideFlags: 0

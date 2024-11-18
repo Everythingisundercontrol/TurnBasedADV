@@ -50,6 +50,7 @@ public class WarModel
     }
 
     public string FocosOnPointID; //聚焦点位ID
+    public string FocosOnUnitID;    //聚焦单位ID
 
 
     private int _teamPoints; //队伍行动值

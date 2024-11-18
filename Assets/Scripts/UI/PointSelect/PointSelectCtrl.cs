@@ -79,7 +79,6 @@ public class PointSelectCtrl : UICtrlBase
     /// </summary>
     private void PointButtonOnClick(Button button)
     {
-        Debug.Log(button.name);
         WarManager.Instance.TeamMove(button.name);
         WarManager.Instance.MoveEventEnd();
         

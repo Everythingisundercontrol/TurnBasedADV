@@ -1,1 +1,26 @@
-{"Units":[{"unitID":"unit_02","PointID":["003"],"MemberID":["member_02"],"teamAp":2,"ifKindness":true}]}
+{
+  "Units": [
+    {
+      "unitID": "unit_02",
+      "PointID": [
+        "003"
+      ],
+      "MemberID": [
+        "member_02"
+      ],
+      "teamAp": 1,
+      "ifKindness": false
+    },
+    {
+      "unitID": "unit_03",
+      "PointID": [
+        "004"
+      ],
+      "MemberID": [
+        "member_03"
+      ],
+      "teamAp": 2,
+      "ifKindness": true
+    }
+  ]
+}

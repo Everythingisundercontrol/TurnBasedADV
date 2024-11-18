@@ -65,8 +65,7 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     public void ShowFocosOnUnit()
     {
-        var focosOnPoint = WarManager.Instance.Model.PointModels[WarManager.Instance.Model.FocosOnPointID];
-        var focosOnUnitID = focosOnPoint.unitID;
+        var focosOnUnitID = WarManager.Instance.Model.FocosOnUnitID;
         var leaderMemberID = WarManager.Instance.Model.TeamModels[focosOnUnitID].MemberID[0];
         var path = WarManager.Instance.Model.MemberData[leaderMemberID].prefabPath;
         var sp = AssetManager.Instance.LoadAsset<Sprite>(path);

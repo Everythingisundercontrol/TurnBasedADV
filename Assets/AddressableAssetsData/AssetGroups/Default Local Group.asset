@@ -87,6 +87,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c61a72d30ab9cd4c80f928d19177ab7
+    m_Address: member_03.jpg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a87ec479bd3163249a7637c57fdcb22b
     m_Address: memberData.json
     m_ReadOnly: 0

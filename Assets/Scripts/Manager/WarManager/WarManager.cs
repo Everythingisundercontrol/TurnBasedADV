@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Object = UnityEngine.Object;
 
 public class WarManager : BaseSingleton<WarManager>, IMonoManager
@@ -82,7 +82,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         //监听数值变化事件结束
         EventManager.Instance.RemoveListener(EventName.RoundsChange, RoundsChangeEvent);
         EventManager.Instance.RemoveListener(EventName.TpChange, TeamPointChangeEvent);
-        EventManager.Instance.RemoveListener(EventName.FocosOnUnitChange, FocosOnUnitChangeEvent);
     }
 
     /// <summary>
@@ -114,7 +113,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         //事件移除
-        EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
+        // EventManager.Instance.RemoveListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
 
         Model.GameStart();
         _ctrl.SetUpOnExitUI();
@@ -122,7 +121,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         //监听TP/Ap/rounds数值变化
         EventManager.Instance.AddListener(EventName.RoundsChange, RoundsChangeEvent);
         EventManager.Instance.AddListener(EventName.TpChange, TeamPointChangeEvent);
-        EventManager.Instance.AddListener(EventName.FocosOnUnitChange, FocosOnUnitChangeEvent);
     }
 
     /// <summary>
@@ -240,6 +238,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     public void TeamMove(string destinationPointID)
     {
         var start = Model.FocosOnPointID;
+        Debug.Log(start + "  :  " + destinationPointID);
         var list = Model.PointsShortestPathCalculation(start, destinationPointID);
         if (list == null)
         {
@@ -286,69 +285,29 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
-    /// 队伍移动拆分成每一步
+    /// 检查该点位是否可创建队伍并判断unit是否为空
     /// </summary>
-    private void TeamStepMove(string startPointID, string nextPointID)
+    public void TeamCreateAbleCheck(string pointID)
     {
-        CheckNextPointUnit(startPointID, nextPointID);
-
-        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID))
+        if (!Model.PointData[pointID].canNewTeam)
         {
-            //todo:事件触发
-            Debug.Log("事件触发");
-        }
-    }
-
-    /// <summary>
-    /// 检测下一步是否有敌方单位/我方单位 
-    /// </summary>
-    /// <param name="startPointID"></param>
-    /// <param name="nextPointID"></param>
-    private void CheckNextPointUnit(string startPointID, string nextPointID)
-    {
-        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
-        {
-            //if ifkindness == false
-            //todo:battle
-            Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
-            RemoveUnitByPointID(nextPointID);
-            Move(startPointID, nextPointID);
-
-            //if ifkindness == true
-            //位置交换
             return;
         }
 
-        Move(startPointID, nextPointID);
+        if (Model.PointModels[pointID].unitID != "")
+        {
+            return;
+        }
+
+        CNTPointBtnOnClick(pointID);
     }
-
-    /// <summary>
-    /// 单位移动动作
-    /// </summary>
-    /// <param name="startPointID"></param>
-    /// <param name="nextPointID"></param>
-    private void Move(string startPointID, string nextPointID)
-    {
-        Debug.Log(startPointID + " => " + nextPointID);
-
-        //model
-        Model.PointModels[nextPointID].unitID = Model.PointModels[startPointID].unitID;
-        Model.PointModels[startPointID].unitID = null;
-        Model.FocosOnPointID = nextPointID;
-
-        //view
-        _unitGameObjects[startPointID].transform.position = _pointGameObjects[nextPointID].transform.position;
-        _unitGameObjects.Add(nextPointID, _unitGameObjects[startPointID]);
-        _unitGameObjects.Remove(startPointID);
-    }
-
 
     /// <summary>
     /// setUP阶段事件绑定
     /// </summary>
     private void SetUpBindEvent()
     {
-        EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
+        // EventManager.Instance.AddListener<Vector3>(EventName.ClickLeft, SetUpClickLeft);
     }
 
     /// <summary>
@@ -467,7 +426,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         }
 
         var point = AssetManager.Instance.LoadAsset<GameObject>("Point.prefab");
-        CreatePointsObj(pointPosition, pointID, point);
+        CreatePointsObj(pointPosition, pointID, point, null);
     }
 
     /// <summary>
@@ -478,7 +437,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     private void CreateCntPoint(Vector3 pointPosition, string pointID)
     {
         var point = AssetManager.Instance.LoadAsset<GameObject>("CNTPoint.prefab");
-        CreatePointsObj(pointPosition, pointID, point);
+        CreatePointsObj(pointPosition, pointID, point, "CNTPoint");
     }
 
     /// <summary>
@@ -489,13 +448,14 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     private void CreateEventPoint(Vector3 pointPosition, string pointID)
     {
         var point = AssetManager.Instance.LoadAsset<GameObject>("EventPoint.prefab");
-        CreatePointsObj(pointPosition, pointID, point);
+        CreatePointsObj(pointPosition, pointID, point, "EventPoint");
     }
 
     /// <summary>
     /// 创建point的obj
     /// </summary>
-    private void CreatePointsObj(Vector3 inputVector3, string pointID, GameObject inputGameObject)
+    private void CreatePointsObj(Vector3 inputVector3, string pointID, GameObject inputGameObject,
+        [CanBeNull] string PointType)
     {
         var pointContainer = GameObject.Find("Points");
         if (!pointContainer)
@@ -507,6 +467,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
 
         var newPointInfo = newPoint.GetComponent<PointInfo>();
         newPointInfo.pointID = pointID;
+
+        newPoint.AddComponent<PointController>();
+        newPoint.GetComponent<PointController>().PointType = PointType;
 
         _pointGameObjects.Add(pointID, newPoint);
     }
@@ -627,7 +590,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var path = Model.MemberData[unit.MemberID[0]].prefabPath;
         var unitContainer = GameObject.Find("Units");
 
-        CreateUnitObj(pointID, position, path, unitContainer);
+        CreateUnitObj(pointID, position, path, unitContainer, unit.unitID);
     }
 
     /// <summary>
@@ -664,7 +627,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var path = Model.MemberData[unit.MemberID[0]].prefabPath; //获取大头照的路径
         var unitContainer = GameObject.Find("Units");
 
-        CreateUnitObj(pointID, position, path, unitContainer);
+        CreateUnitObj(pointID, position, path, unitContainer, unit.unitID);
     }
 
     /// <summary>
@@ -699,15 +662,16 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var path = Model.MemberData[unit.MemberID[0]].prefabPath;
         var unitContainer = GameObject.Find("Units");
 
-        CreateUnitObj(pointID, position, path, unitContainer);
+        CreateUnitObj(pointID, position, path, unitContainer, unit.unitID);
 
-        Model.FocosOnPointID = pointID; //聚焦改变
+        Model.FocosOnPointID = pointID;
+        Model.FocosOnUnitID = unit.unitID; //聚焦改变
     }
 
     /// <summary>
     /// 创建游戏单位obj
     /// </summary>
-    private void CreateUnitObj(string pointID, Vector3 position, string path, GameObject unitContainer)
+    private void CreateUnitObj(string pointID, Vector3 position, string path, GameObject unitContainer, string unitID)
     {
         var sprite = AssetManager.Instance.LoadAsset<Sprite>(path);
         if (!unitContainer)
@@ -719,6 +683,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var unit = Object.Instantiate(AssetManager.Instance.LoadAsset<GameObject>("Unit.prefab"), position,
             Quaternion.identity, unitContainer.transform);
         unit.GetComponent<SpriteRenderer>().sprite = sprite;
+        unit.GetComponent<UnitInfo>().UnitID = unitID;
+        unit.GetComponent<UnitInfo>().LocatedPointID = pointID;
+        unit.AddComponent<UnitController>();
+
         _unitGameObjects.Add(pointID, unit);
     }
 
@@ -743,51 +711,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// ////////////////////////////////////
     /// 事件
     /// ////////////////////////////////////
-    /// <summary>
-    /// SetUp阶段鼠标左键点击，检测是否有东西   //todo:重写一遍，不需要反向查找了
-    /// </summary>
-    /// <param name="pos"></param>
-    private void SetUpClickLeft(Vector3 pos)
-    {
-        if (Camera.main is null)
-        {
-            return;
-        }
-
-        var ray = Camera.main.ScreenPointToRay(pos);
-        var hit = Physics2D.Raycast(ray.origin, ray.direction);
-        if (!hit.collider)
-        {
-            return;
-        }
-
-        var pointInfo = hit.collider.gameObject.GetComponent<PointInfo>();
-        if (!pointInfo)
-        {
-            return;
-        }
-
-        TeamCreateAbleCheck(pointInfo.pointID);
-    }
-
-    /// <summary>
-    /// 检查该点位是否可创建队伍并判断unit是否为空
-    /// </summary>
-    private void TeamCreateAbleCheck(string pointID)
-    {
-        if (!Model.PointData[pointID].canNewTeam)
-        {
-            return;
-        }
-
-        if (Model.PointModels[pointID].unitID != "")
-        {
-            return;
-        }
-
-        CNTPointBtnOnClick(pointID);
-    }
-
     /// <summary>
     /// CNTPoint左键点击事件
     /// </summary>
@@ -819,6 +742,81 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
+    /// 决策阶段点击事件选择单位
+    /// </summary>
+    /// <param name="pos"></param>
+    public void DecisionChangeFocosUnit(string unitID, string pointID)
+    {
+        if (!Model.TeamModels.ContainsKey(unitID))
+        {
+            return;
+        }
+
+        Model.FocosOnUnitID = unitID;
+        Model.FocosOnPointID = pointID;
+        _ctrl.ShowFocosOnUnit();
+        Debug.Log("DecisionClickLeft : " + Model.FocosOnPointID);
+    }
+
+    /// <summary>
+    /// 队伍移动拆分成每一步
+    /// </summary>
+    private void TeamStepMove(string startPointID, string nextPointID)
+    {
+        CheckNextPointUnit(startPointID, nextPointID);
+
+        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID))
+        {
+            //todo:事件触发
+            Debug.Log("事件触发");
+        }
+    }
+
+    /// <summary>
+    /// 检测下一步是否有敌方单位/我方单位 
+    /// </summary>
+    /// <param name="startPointID"></param>
+    /// <param name="nextPointID"></param>
+    private void CheckNextPointUnit(string startPointID, string nextPointID)
+    {
+        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
+        {
+            //if ifkindness == false
+            //todo:battle
+            Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
+            RemoveUnitByPointID(nextPointID);
+            Move(startPointID, nextPointID);
+
+            //if ifkindness == true
+            //位置交换
+            return;
+        }
+
+        Move(startPointID, nextPointID);
+    }
+
+    /// <summary>
+    /// 单位移动动作
+    /// </summary>
+    /// <param name="startPointID"></param>
+    /// <param name="nextPointID"></param>
+    private void Move(string startPointID, string nextPointID)
+    {
+        Debug.Log(startPointID + " => " + nextPointID);
+
+        //model
+        Model.PointModels[nextPointID].unitID = Model.PointModels[startPointID].unitID;
+        Model.PointModels[startPointID].unitID = null;
+        Model.FocosOnPointID = nextPointID;
+        _unitGameObjects[startPointID].GetComponent<UnitInfo>().LocatedPointID = nextPointID;
+
+        //view
+        _unitGameObjects[startPointID].transform.position = _pointGameObjects[nextPointID].transform.position;
+        _unitGameObjects.Add(nextPointID, _unitGameObjects[startPointID]);
+        _unitGameObjects.Remove(startPointID);
+    }
+
+    /// <summary>
     /// 回合数变化事件
     /// </summary>
     private void RoundsChangeEvent()
@@ -832,14 +830,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     private void TeamPointChangeEvent()
     {
         _ctrl.ShowTeamPoint();
-    }
-
-    /// <summary>
-    /// 聚焦单位变化事件
-    /// </summary>
-    private void FocosOnUnitChangeEvent()
-    {
-        _ctrl.ShowFocosOnUnit();
     }
 
     /// ////////////////////////////////
