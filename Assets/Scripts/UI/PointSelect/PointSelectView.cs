@@ -30,7 +30,7 @@ public class PointSelectView : MonoBehaviour
         {
             Destroy(pair.Value);
         }
-
+        
         MapPointDic.Clear();
         gameObject.SetActive(false);
     }

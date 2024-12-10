@@ -17,6 +17,7 @@ public class TestClickObj : MonoBehaviour
         if (Time.time - _clickTimer < 0.1f)
         {
             _onClickAction?.Invoke(Input.mousePosition);
+            // Debug.Log(gameObject.name);
         }
     }
     

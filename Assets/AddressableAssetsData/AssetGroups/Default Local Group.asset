@@ -117,6 +117,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6c7848ac78e9ce43981cde4618908d6
+    m_Address: EndGameView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d7e86a5fea2abfb4caa6159e92fad1d5
     m_Address: CNTPoint.prefab
     m_ReadOnly: 0

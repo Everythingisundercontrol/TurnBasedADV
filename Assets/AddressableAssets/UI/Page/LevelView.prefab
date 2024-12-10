@@ -853,7 +853,7 @@ GameObject:
   - component: {fileID: -8722154640709747390}
   - component: {fileID: 7649988814449700350}
   - component: {fileID: 721615653880771444}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: LevelView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -899,7 +899,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &-8722154640709747390
 MonoBehaviour:

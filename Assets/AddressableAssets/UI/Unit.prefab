@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7034589243656563446}
   - component: {fileID: 5971178602950887164}
   - component: {fileID: 4313873800029918884}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Unit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,3 +122,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UnitID: 
+  LocatedPointID: 

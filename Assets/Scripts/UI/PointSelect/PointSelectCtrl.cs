@@ -17,6 +17,7 @@ public class PointSelectCtrl : UICtrlBase
 
     public override void OpenRoot(params object[] param)
     {
+        GetComponent<Canvas>().worldCamera = Camera.main;
         ButtonCreate();
         _model.OnOpen();
         _view.OpenWindow();
@@ -24,6 +25,7 @@ public class PointSelectCtrl : UICtrlBase
 
     public override void CloseRoot()
     {
+        PointButtonOnClickRemove();
         _view.CloseWindow();
     }
 
@@ -34,6 +36,14 @@ public class PointSelectCtrl : UICtrlBase
     public override void BindEvent()
     {
         _view.Mask.onClick.AddListener(MaskOnClick);
+    }
+
+    private void PointButtonOnClickRemove()
+    {
+        foreach (var buttonObj in _view.MapPointDic.Values)
+        {
+            buttonObj.GetComponent<Button>().onClick.RemoveAllListeners();
+        }
     }
 
     /// <summary>
@@ -48,8 +58,9 @@ public class PointSelectCtrl : UICtrlBase
             var position = GetPointPosition(pointID);
             var button = Instantiate(prefab, transform);
             button.transform.position = position;
+            Debug.Log("ButtCreate : " + pointID + " " + button.transform.position.x);
             button.name = pointID;
-            button.GetComponent<Button>().onClick.AddListener(() => PointButtonOnClick(button.GetComponent<Button>()));
+            button.GetComponent<Button>().onClick.AddListener(() => PointButtonOnClick(button.name));
             _view.MapPointDic.Add(button.name, button);
         }
     }
@@ -77,11 +88,12 @@ public class PointSelectCtrl : UICtrlBase
     /// <summary>
     ///  点位点击事件
     /// </summary>
-    private void PointButtonOnClick(Button button)
+    private void PointButtonOnClick(string button)
     {
-        WarManager.Instance.TeamMove(button.name);
+        Debug.Log("PointButtonOnClick");
+        WarManager.Instance.TeamMove(button);
         WarManager.Instance.MoveEventEnd();
-        
+
         UIManager.Instance.CloseWindow("PointSelect.prefab");
     }
 
@@ -90,6 +102,7 @@ public class PointSelectCtrl : UICtrlBase
     /// </summary>
     private void MaskOnClick()
     {
+        Debug.Log("MaskOnClick");
         WarManager.Instance.MoveEventEnd();
         UIManager.Instance.CloseWindow("PointSelect.prefab");
     }

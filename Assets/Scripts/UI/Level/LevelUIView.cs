@@ -36,7 +36,7 @@ public class LevelUIView : MonoBehaviour
         {
             return;
         }
-
+        
         gameObject.SetActive(false);
     }
 
@@ -80,6 +80,5 @@ public class LevelUIView : MonoBehaviour
     {
         leaderPic.sprite = inputLeaderPic;
         leaderPic.color = Color.white;
-        Debug.Log("SetLeaderPic" + inputLeaderPic.name);
     }
 }

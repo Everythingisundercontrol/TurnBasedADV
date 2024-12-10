@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7888654964967720232}
   - component: {fileID: 2449600617002954193}
   - component: {fileID: 2990630844544407555}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Work
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 5164753232300587853}
   - component: {fileID: 3322126841369326319}
   - component: {fileID: 7388754373557221051}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Area02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -168,7 +168,7 @@ GameObject:
   - component: {fileID: 1537463580775522088}
   - component: {fileID: 2175718789098850590}
   - component: {fileID: 8923862186878432192}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ConfirmBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -289,7 +289,7 @@ GameObject:
   - component: {fileID: 3386021849461643014}
   - component: {fileID: 8487643428866216240}
   - component: {fileID: 4703961009016183908}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Area01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -370,7 +370,7 @@ GameObject:
   - component: {fileID: 2944652715346384039}
   - component: {fileID: 65684980080695754}
   - component: {fileID: 7078393178534508643}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ReturnBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -492,7 +492,7 @@ GameObject:
   - component: {fileID: 7651729521803555013}
   - component: {fileID: 123746756088179146}
   - component: {fileID: 8003352531195345707}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Level01Btn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -611,7 +611,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5506893071860623184}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -651,7 +651,7 @@ GameObject:
   - component: {fileID: 4322548993919607743}
   - component: {fileID: 8578180926593621412}
   - component: {fileID: 5626859402629670296}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -725,7 +725,7 @@ GameObject:
   - component: {fileID: 3231501732010825154}
   - component: {fileID: 3540603805014658217}
   - component: {fileID: 3510198763932550780}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Area03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -803,7 +803,7 @@ GameObject:
   - component: {fileID: 3948844666839580701}
   - component: {fileID: 3021893981892819687}
   - component: {fileID: 5341359184307498416}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Reward
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -882,7 +882,7 @@ GameObject:
   - component: {fileID: 8797371349307847164}
   - component: {fileID: 3966832094954821833}
   - component: {fileID: 8580067483022942692}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Level02Btn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1005,7 +1005,7 @@ GameObject:
   - component: {fileID: 8001323272602622098}
   - component: {fileID: 1830321495118913281}
   - component: {fileID: 4812593004835040128}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: AreaView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1056,7 +1056,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &8001323272602622098
 MonoBehaviour:
@@ -1116,7 +1116,7 @@ GameObject:
   - component: {fileID: 7324116613513491896}
   - component: {fileID: 1303821899762312607}
   - component: {fileID: 6295387451117951099}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1137,10 +1137,10 @@ RectTransform:
   m_Father: {fileID: 6083167727523304422}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1920, y: 1080}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1303821899762312607
 CanvasRenderer:
@@ -1188,7 +1188,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7551648289055215782}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}

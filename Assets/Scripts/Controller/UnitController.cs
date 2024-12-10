@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 public class UnitController : MonoBehaviour
 {
@@ -11,7 +12,6 @@ public class UnitController : MonoBehaviour
 
     private void OnMouseUp()
     {
-        Debug.Log("UnitController");
         if (!(Time.time - _clickTimer < 0.1f))
         {
             return;
@@ -19,10 +19,42 @@ public class UnitController : MonoBehaviour
 
         var unitID = GetComponent<UnitInfo>().UnitID;
         var pointID = GetComponent<UnitInfo>().LocatedPointID;
-        Debug.Log(unitID + " + " + pointID);
+
         if (unitID != WarManager.Instance.Model.FocosOnUnitID)
         {
             WarManager.Instance.DecisionChangeFocosUnit(unitID, pointID);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public void TurnEndEnemyMoveCheck()
+    {
+        var unitInfo = GetComponent<UnitInfo>();
+        if (unitInfo.ifKindness)
+        {
+            return;
+        }
+        Debug.Log("TurnEndEnemyMoveCheck" + unitInfo.UnitID + unitInfo.ifKindness);
+        var res = WarManager.Instance.Model.GetPointsWithinTwoSteps(unitInfo.LocatedPointID, 2);
+        if (res.Count>0)
+        {
+            var list = WarManager.Instance.Model.PointsShortestPathCalculation(unitInfo.LocatedPointID, res.First());
+            if (list == null)
+            {
+                list = WarManager.Instance.Model.PointsShortestPathCalculation(res.First(), unitInfo.LocatedPointID);
+                if (list == null)
+                {
+                    Debug.Log("list == null");
+                    return;
+                }
+        
+                list.Reverse();
+            }
+            
+            WarManager.Instance.EnemyStepMove(list[0],list[1]);
+
         }
     }
 }

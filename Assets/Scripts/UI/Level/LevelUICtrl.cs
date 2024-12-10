@@ -15,6 +15,7 @@ public class LevelUICtrl : UICtrlBase
 
     public override void OpenRoot(params object[] param)
     {
+        GetComponent<Canvas>().worldCamera = Camera.main;
         _model.OnOpen();
         _view.OpenWindow();
     }

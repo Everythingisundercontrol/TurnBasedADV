@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 public class WarModel
 {
@@ -50,7 +51,7 @@ public class WarModel
     }
 
     public string FocosOnPointID; //聚焦点位ID
-    public string FocosOnUnitID;    //聚焦单位ID
+    public string FocosOnUnitID; //聚焦单位ID
 
 
     private int _teamPoints; //队伍行动值
@@ -100,6 +101,8 @@ public class WarModel
 
         GameState = GameStateEnum.Default;
         StartAble = false;
+        
+        
     }
 
     /// <summary>
@@ -160,14 +163,97 @@ public class WarModel
         return null;
     }
 
-    // /// <summary>
-    // /// 计算两点间最短距离
-    // /// </summary>
-    // public int PointsDistanceCalculation(string start, string end)
-    // {
-    //     var distance = PointsShortestPathCalculation(start, end).Count;
-    //     return distance - 1;
-    // }
+    /// <summary>
+    /// 敌人最近两格队伍检测    //todo：数据结构改为邻接多重表，列表实现有序列,现在很浪费资源
+    /// </summary>
+    /// <returns></returns>
+    public HashSet<string> GetPointsWithinTwoSteps(string startId, int steps)
+    {
+        var visited = new HashSet<string>();
+        var result = new HashSet<string>();
+        var queue = new Queue<PointData>();
+        var upstreamPoints = new HashSet<string>();
+        var preStep = steps;
+        var latStep = steps;
+
+        // 下游搜索
+        var startPoint = PointData[startId];
+        if (startPoint != null)
+        {
+            queue.Enqueue(startPoint);
+            visited.Add(startPoint.pointID);
+        }
+
+        while (queue.Count > 0 && latStep > 0)
+        {
+            var currentPoint = queue.Dequeue();
+
+            // 检查属性
+            if (!string.IsNullOrEmpty(PointModels[currentPoint.pointID].unitID) && TeamModels.ContainsKey(PointModels[currentPoint.pointID].unitID))
+            {
+                result.Add(currentPoint.pointID);
+            }
+
+            foreach (var nextId in currentPoint.nextPoints)
+            {
+                var nextPoint = PointData[nextId];
+                if (nextPoint == null || visited.Contains(nextId))
+                {
+                    continue;
+                }
+
+                queue.Enqueue(nextPoint);
+                visited.Add(nextId);
+            }
+            latStep--;
+        }
+
+        // 上游搜索
+        foreach (var point in PointData)
+        {
+            if (!point.Value.nextPoints.Contains(startId) || upstreamPoints.Contains(point.Key))
+            {
+                continue;
+            }
+            upstreamPoints.Add(point.Key);
+            queue.Enqueue(point.Value);
+        }
+
+        while (queue.Count > 0 && preStep > 0)
+        {
+            var currentPoint = queue.Dequeue();
+
+            // 检查属性
+            if (!string.IsNullOrEmpty(PointModels[currentPoint.pointID].unitID) && TeamModels.ContainsKey(PointModels[currentPoint.pointID].unitID))
+            {
+                result.Add(currentPoint.pointID);
+            }
+
+            foreach (var prevId in upstreamPoints)
+            {
+                var prevPoint = PointData[prevId];
+                if (prevPoint == null || !prevPoint.nextPoints.Contains(currentPoint.pointID) || visited.Contains(prevId))
+                {
+                    continue;
+                }
+                queue.Enqueue(prevPoint);
+                visited.Add(prevId);
+            }
+
+            preStep--;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 计算两点间最短距离
+    /// </summary>
+    public int PointsDistanceCalculation(string start, string end)
+    {
+        var distance = PointsShortestPathCalculation(start, end).Count;
+        return distance - 1;
+    }
 
     /// <summary>
     /// 成员Ap重置

@@ -18,7 +18,6 @@ public class PointController : MonoBehaviour
             return;
         }
 
-        Debug.Log(PointType);
         if (PointType != "CNTPoint")
         {
             return;
