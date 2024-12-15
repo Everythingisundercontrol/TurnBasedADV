@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Manager.BattleManager;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -214,6 +215,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     public void BattleOnEnter()
     {
+        //todo:
     }
 
     /// <summary>
@@ -249,14 +251,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var list = Model.PointsShortestPathCalculation(start, destinationPointID);
         if (list == null)
         {
-            list = Model.PointsShortestPathCalculation(destinationPointID, start);
-            if (list == null)
-            {
-                Debug.Log("list == null");
-                return;
-            }
-
-            list.Reverse();
+            Debug.Log("list == null");
+            return;
         }
 
         var dis = list.Count - 1;
@@ -734,7 +730,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         var unit = new Unit
         {
             unitID = "unit_01",
-            PointID = new List<string>(),
             MemberID = new List<string>
             {
                 "member_01",
@@ -773,31 +768,53 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     }
 
     /// <summary>
-    /// 队伍移动拆分成每一步
+    /// 我方队伍移动拆分成每一步
     /// </summary>
     public void TeamStepMove(string startPointID, string nextPointID)
     {
-        CheckNextPointUnit(startPointID, nextPointID);
+        CheckNextPointUnit(startPointID, nextPointID); //检测下一个点是否有单位，并作出相应动作
 
-        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID))
+        if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].eventID)) //检测下个点是否会触发事件
         {
             //todo:事件触发
             Debug.Log("事件触发");
         }
     }
 
+    /// <summary>
+    /// 敌人队伍每步移动
+    /// </summary>
+    /// <param name="startPointID"></param>
+    /// <param name="nextPointID"></param>
     public void EnemyStepMove(string startPointID, string nextPointID)
     {
+        
         if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
         {
-            //if ifkindness == false
-            //todo:battle
-            Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
-            RemoveUnitByPointID(nextPointID);
-            EnemyMove(startPointID, nextPointID);
+            var nextPointUnitID = Model.PointModels[nextPointID].unitID;
 
-            //if ifkindness == true
-            //位置交换
+            if (Model.EnemyModels.ContainsKey(nextPointUnitID))
+            {
+                //位置交换
+                return;
+            }
+
+            if (!Model.TeamModels.ContainsKey(nextPointUnitID))
+            {
+                return;
+            }
+            Debug.Log("NO MOVE");
+            FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_BattleState);
+            Model.BattleModels.Add(new BattleModel
+            {
+                BattleEnemyID = Model.PointModels[startPointID].unitID,
+                BattleTeamID = Model.PointModels[nextPointID].unitID
+            });
+
+            // Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
+            // RemoveUnitByPointID(nextPointID);
+            // EnemyMove(startPointID, nextPointID);
+            
             return;
         }
 
@@ -813,19 +830,44 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     {
         if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
         {
-            //if ifkindness == false
-            //todo:battle
-            Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
-            RemoveUnitByPointID(nextPointID);
-            Move(startPointID, nextPointID);
+            var nextPointUnitID = Model.PointModels[nextPointID].unitID;
 
-            //if ifkindness == true
-            //位置交换
+            if (Model.TeamModels.ContainsKey(nextPointUnitID))
+            {
+                //位置交换
+                return;
+            }
+
+            if (!Model.EnemyModels.ContainsKey(nextPointUnitID))
+            {
+                return;
+            }
+
+            FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_BattleState);
+            Model.BattleModels.Add(new BattleModel
+            {
+                BattleTeamID = Model.PointModels[startPointID].unitID,
+                BattleEnemyID = Model.PointModels[nextPointID].unitID
+            });
+
+
+            // Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
+            // RemoveUnitByPointID(nextPointID);
+            // Move(startPointID, nextPointID);
+
             return;
         }
 
         Move(startPointID, nextPointID);
     }
+
+    /// <summary>
+    /// 进入战斗场景与页面
+    /// </summary>
+    /// <returns></returns>
+    // private IEnumerator BattleStart()
+    // {
+    // }
 
     /// <summary>
     /// 单位移动动作
@@ -840,7 +882,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         Model.PointModels[nextPointID].unitID = Model.PointModels[startPointID].unitID;
         Model.PointModels[startPointID].unitID = null;
         Model.FocosOnPointID = nextPointID;
-        _unitGameObjects[startPointID].GetComponent<UnitInfo>().LocatedPointID = nextPointID;
+        _unitGameObjects[startPointID].GetComponent<UnitController>().MoveTo(nextPointID);
 
         //view
         _unitGameObjects[startPointID].transform.position = _pointGameObjects[nextPointID].transform.position;
@@ -855,7 +897,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         //model
         Model.PointModels[nextPointID].unitID = Model.PointModels[startPointID].unitID;
         Model.PointModels[startPointID].unitID = null;
-        _unitGameObjects[startPointID].GetComponent<UnitInfo>().LocatedPointID = nextPointID;
+        _unitGameObjects[startPointID].GetComponent<UnitController>().MoveTo(nextPointID);
 
         //view
         _unitGameObjects[startPointID].transform.position = _pointGameObjects[nextPointID].transform.position;
@@ -884,8 +926,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// </summary>
     private void TurnEndEnemyMove()
     {
-        //单向邻接表搜索入度只能遍历 >>  //todo:数据存储改为邻接多重表
-        //搜索周围两格有无team
         var enemy = new List<GameObject>();
         foreach (var unitPair in _unitGameObjects)
         {
@@ -895,9 +935,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             }
         }
 
-        for (int i = 0; i < enemy.Count; i++)
+        foreach (var t in enemy)
         {
-            enemy[i].GetComponent<UnitController>().TurnEndEnemyMoveCheck();
+            t.GetComponent<UnitController>().TurnEndEnemyMoveCheck();
         }
     }
 

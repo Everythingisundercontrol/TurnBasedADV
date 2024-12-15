@@ -13,10 +13,20 @@
     {
       "pointID": "003",
       "eventID": "",
-      "unitID": ""
+      "unitID": "unit_02"
     },
     {
       "pointID": "004",
+      "eventID": "",
+      "unitID": "unit_03"
+    },
+    {
+      "pointID": "005",
+      "eventID": "",
+      "unitID": ""
+    },
+    {
+      "pointID": "006",
       "eventID": "",
       "unitID": ""
     }

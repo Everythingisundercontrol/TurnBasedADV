@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelUICtrl : UICtrlBase
@@ -159,6 +160,7 @@ public class LevelUICtrl : UICtrlBase
     /// </summary>
     private void TurnEndBtnOnClick()
     {
+        // test();
         WarManager.Instance.LevelTurnEndBtnOnClickEvent();
     }
 
@@ -182,5 +184,32 @@ public class LevelUICtrl : UICtrlBase
         yield return SceneManager.Instance.ChangeSceneAsync("Home");
         WarManager.Instance.OnQuit();
         UIManager.Instance.OpenWindow("AreaView.prefab");
+    }
+
+    private void test()
+    {
+        var pd = new List<PointData>();
+        var pdl = new PointDataList();
+        pd.Add(new PointData
+        {
+            pointID = "001",
+            canNewTeam = false,
+            prePoints = new List<string>
+            {
+                "003"
+            },
+            nextPoints = new List<string>
+            {
+                "002",
+                "003",
+                "004"
+            },
+            positionX = 0,
+            positionY = 0
+        });
+        pdl.PointDatas = pd;
+
+        var js = JsonUtility.ToJson(pdl);
+        Debug.Log(js);
     }
 }

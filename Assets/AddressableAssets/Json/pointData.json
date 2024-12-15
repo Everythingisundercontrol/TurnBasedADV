@@ -3,8 +3,12 @@
     {
       "pointID": "001",
       "canNewTeam": true,
-      "nextPoints": [
+      "prePoints": [
         "002"
+      ],
+      "nextPoints": [
+        "002",
+        "006"
       ],
       "positionX": 0.0,
       "positionY": 0.0
@@ -12,7 +16,11 @@
     {
       "pointID": "002",
       "canNewTeam": false,
+      "prePoints": [
+        "003"
+      ],
       "nextPoints": [
+        "001",
         "003"
       ],
       "positionX": 1.0,
@@ -21,7 +29,11 @@
     {
       "pointID": "003",
       "canNewTeam": false,
+      "prePoints": [
+        "004"
+      ],
       "nextPoints": [
+        "002",
         "004"
       ],
       "positionX": 2.0,
@@ -30,8 +42,41 @@
     {
       "pointID": "004",
       "canNewTeam": false,
-      "nextPoints": [],
+      "prePoints": [
+        "001"
+      ],
+      "nextPoints": [
+        "003",
+        "005"
+      ],
       "positionX": 2.0,
+      "positionY": 2.0
+    },
+    {
+      "pointID": "005",
+      "canNewTeam": false,
+      "prePoints": [
+        "001"
+      ],
+      "nextPoints": [
+        "004",
+        "006"
+      ],
+      "positionX": 1.0,
+      "positionY": 2.0
+    }
+  ,
+    {
+      "pointID": "006",
+      "canNewTeam": false,
+      "prePoints": [
+        "001"
+      ],
+      "nextPoints": [
+        "001",
+        "005"
+      ],
+      "positionX": 0.0,
       "positionY": 2.0
     }
   ]

@@ -3,9 +3,6 @@
     {
       "eventID": "event_01",
       "eventText": "测试测试0123456testtest",
-      "pointID": [
-        "002"
-      ],
       "options": [
         "支持",
         "沉默",

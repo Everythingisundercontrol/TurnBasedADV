@@ -2,9 +2,6 @@
   "Units": [
     {
       "unitID": "unit_02",
-      "PointID": [
-        "003"
-      ],
       "MemberID": [
         "member_02"
       ],
@@ -13,9 +10,6 @@
     },
     {
       "unitID": "unit_03",
-      "PointID": [
-        "004"
-      ],
       "MemberID": [
         "member_03"
       ],
