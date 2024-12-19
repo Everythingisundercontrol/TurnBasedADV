@@ -164,54 +164,54 @@ public class WarModel
         return null;
     }
 
-    /// <summary>
-    /// 敌人最近n层范围检测我方队伍
-    /// </summary>
-    /// <returns></returns>
-    public HashSet<string> GetPointsWithinNLayers(string startId, int layers)
-    {
-        var visited = new HashSet<string>();//访问过的点
-        var result = new HashSet<string>();//指定步数内可达的所有pointID
-        var queue = new Queue<(PointData, int)>(); // 队列中存储元组，包含点和当前层级
-        var startPoint = PointData[startId];
-
-        if (startPoint != null)//如果startPoint不为null，则将其加入队列，并标记为已访问
-        {
-            queue.Enqueue((startPoint, 0)); // 起始点的层级为0
-            visited.Add(startPoint.pointID);
-        }
-
-        while (queue.Count > 0) // 只要队列不为空
-        {
-            var (currentPoint, currentLayer) = queue.Dequeue();//队列队首元素出列
-
-            // 检查属性，若该点的unit不为空且是我方队伍，则result加入该点
-            if (!string.IsNullOrEmpty(PointModels[currentPoint.pointID].unitID) &&
-                TeamModels.ContainsKey(PointModels[currentPoint.pointID].unitID))
-            {
-                result.Add(currentPoint.pointID);
-            }
-
-            //若下一层层级超出上限，则不列入队列
-            if (currentLayer + 1 > layers)
-            {
-                continue;
-            }
-            
-            foreach (var nextId in currentPoint.nextPoints)
-            {
-                if (!PointData.ContainsKey(nextId) || visited.Contains(nextId))
-                {
-                    continue;
-                }
-
-                queue.Enqueue((PointData[nextId], currentLayer + 1));
-                visited.Add(nextId);
-            }
-        }
-
-        return result;
-    }
+    // /// <summary>
+    // /// 敌人最近n层范围检测我方队伍
+    // /// </summary>
+    // /// <returns></returns>
+    // public HashSet<string> GetPointsWithinNLayerss(string startId, int layers)
+    // {
+    //     var visited = new HashSet<string>(); //访问过的点
+    //     var result = new HashSet<string>(); //指定步数内可达的所有pointID
+    //     var queue = new Queue<(PointData, int)>(); // 队列中存储元组，包含点和当前层级
+    //     var startPoint = PointData[startId];
+    //
+    //     if (startPoint != null) //如果startPoint不为null，则将其加入队列，并标记为已访问
+    //     {
+    //         queue.Enqueue((startPoint, 0)); // 起始点的层级为0
+    //         visited.Add(startPoint.pointID);
+    //     }
+    //
+    //     // while (queue.Count > 0) // 只要队列不为空
+    //     // {
+    //     //     var (currentPoint, currentLayer) = queue.Dequeue();//队列队首元素出列
+    //     //
+    //     //     // 检查属性，若该点的unit不为空且是我方队伍，则result加入该点
+    //     //     if (!string.IsNullOrEmpty(PointModels[currentPoint.pointID].unitID) &&
+    //     //         TeamModels.ContainsKey(PointModels[currentPoint.pointID].unitID))
+    //     //     {
+    //     //         result.Add(currentPoint.pointID);
+    //     //     }
+    //     //
+    //     //     //若下一层层级超出上限，则不列入队列
+    //     //     if (currentLayer + 1 > layers)
+    //     //     {
+    //     //         continue;
+    //     //     }
+    //     //     
+    //     //     foreach (var nextId in currentPoint.nextPoints)
+    //     //     {
+    //     //         if (!PointData.ContainsKey(nextId) || visited.Contains(nextId))
+    //     //         {
+    //     //             continue;
+    //     //         }
+    //     //
+    //     //         queue.Enqueue((PointData[nextId], currentLayer + 1));
+    //     //         visited.Add(nextId);
+    //     //     }
+    //     // }
+    //
+    //     return result;
+    // }
 
     /// <summary>
     /// 计算两点间最短距离

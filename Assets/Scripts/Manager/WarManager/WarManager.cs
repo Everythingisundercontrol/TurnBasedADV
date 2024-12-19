@@ -413,9 +413,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         // }
     }
 
-    /// //////////////////////////////////
-    /// point
-    /// //////////////////////////////////
+    #region Point
+
     /// <summary>
     /// 创建point
     /// </summary>
@@ -466,7 +465,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// 创建point的obj
     /// </summary>
     private void CreatePointsObj(Vector3 inputVector3, string pointID, GameObject inputGameObject,
-        [CanBeNull] string PointType)
+        string pointType)
     {
         var pointContainer = GameObject.Find("Points");
         if (!pointContainer)
@@ -480,14 +479,15 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         newPointInfo.pointID = pointID;
 
         newPoint.AddComponent<PointController>();
-        newPoint.GetComponent<PointController>().PointType = PointType;
+        newPoint.GetComponent<PointController>().PointType = pointType;
 
         _pointGameObjects.Add(pointID, newPoint);
     }
 
-    /// //////////////////////////////////
-    /// line
-    /// //////////////////////////////////
+    #endregion
+    
+    #region Line
+
     /// <summary>
     /// 检查NextPoint是否为空，不为空则连接
     /// </summary>
@@ -548,9 +548,10 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _lineList.Add(line);
     }
 
-    /// //////////////////////////////////
-    /// unit
-    /// //////////////////////////////////
+    #endregion
+
+    #region Unit
+
     /// <summary>
     /// 通过静态数据创建地图单位
     /// </summary>
@@ -719,9 +720,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         Model.MemberModels.Add(unit.unitID, memberList);
     }
 
-    /// ////////////////////////////////////
-    /// 事件
-    /// ////////////////////////////////////
+    #endregion
+
+    
     /// <summary>
     /// CNTPoint左键点击事件
     /// </summary>
@@ -770,7 +771,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// <summary>
     /// 我方队伍移动拆分成每一步
     /// </summary>
-    public void TeamStepMove(string startPointID, string nextPointID)
+    private void TeamStepMove(string startPointID, string nextPointID)
     {
         CheckNextPointUnit(startPointID, nextPointID); //检测下一个点是否有单位，并作出相应动作
 
@@ -788,7 +789,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// <param name="nextPointID"></param>
     public void EnemyStepMove(string startPointID, string nextPointID)
     {
-        
         if (!string.IsNullOrEmpty(Model.PointModels[nextPointID].unitID))
         {
             var nextPointUnitID = Model.PointModels[nextPointID].unitID;
@@ -803,6 +803,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             {
                 return;
             }
+
             Debug.Log("NO MOVE");
             FsmManager.Instance.SetFsmState(FsmEnum.warFsm, FsmStateEnum.War_BattleState);
             Model.BattleModels.Add(new BattleModel
@@ -814,7 +815,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
             // Debug.Log("battle : " + Model.PointModels[nextPointID].unitID);
             // RemoveUnitByPointID(nextPointID);
             // EnemyMove(startPointID, nextPointID);
-            
+
             return;
         }
 
@@ -872,8 +873,6 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
     /// <summary>
     /// 单位移动动作
     /// </summary>
-    /// <param name="startPointID"></param>
-    /// <param name="nextPointID"></param>
     private void Move(string startPointID, string nextPointID)
     {
         Debug.Log(startPointID + " => " + nextPointID);
@@ -890,6 +889,9 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         _unitGameObjects.Remove(startPointID);
     }
 
+    /// <summary>
+    /// 敌方单位移动动作
+    /// </summary>
     private void EnemyMove(string startPointID, string nextPointID)
     {
         Debug.Log(startPointID + " => " + nextPointID);
@@ -950,9 +952,7 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         return Model.TeamModels.Count == 0 || Model.EnemyModels.Count == 0;
     }
 
-    /// ////////////////////////////////
-    /// 工具
-    /// ////////////////////////////////
+
     /// <summary>
     /// 通过ID获得点位data
     /// </summary>
@@ -969,7 +969,8 @@ public class WarManager : BaseSingleton<WarManager>, IMonoManager
         return null;
     }
 
-
+    
+    
     /// <summary>
     /// 改变点的类型
     /// </summary>

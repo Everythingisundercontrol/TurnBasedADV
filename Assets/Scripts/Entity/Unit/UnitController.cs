@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Tool;
 using UnityEngine;
 
 public class UnitController : MonoBehaviour
@@ -36,13 +38,19 @@ public class UnitController : MonoBehaviour
         {
             return;
         }
+
+        //搜索周围两格
+        var res = WarSceneTool.GetPointsWithinNLayers(WarManager.Instance.Model.PointData, unitInfo.LocatedPointID, 2);
+        res = WarSceneTool.SelectPointHoldUnit(res, WarManager.Instance.Model.PointModels);
         
-        //搜索周围两格有无team
-        var res = WarManager.Instance.Model.GetPointsWithinNLayers(unitInfo.LocatedPointID, 2);
         if (res.Count <= 0)
         {
+            Debug.Log(unitInfo.LocatedPointID + " 附近两格没有单位");
             return;
         }
+
+        
+        
         var list = WarManager.Instance.Model.PointsShortestPathCalculation(unitInfo.LocatedPointID, res.First());
         if (list == null)
         {
@@ -56,9 +64,11 @@ public class UnitController : MonoBehaviour
     /// <summary>
     /// 移动改变model数据
     /// </summary>
-    /// <param name="NextPointID"></param>
-    public void MoveTo(string NextPointID)
+    /// <param name="nextPointID"></param>
+    public void MoveTo(string nextPointID)
     {
-        GetComponent<UnitInfo>().LocatedPointID = NextPointID;
+        GetComponent<UnitInfo>().LocatedPointID = nextPointID;
     }
+
+
 }
